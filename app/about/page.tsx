@@ -42,29 +42,19 @@ export default function About() {
                   We are grateful for divine guidance, and mindful of our Hawaiian heritage and uniqueness as an Island state, dedicate our efforts to fulfill the philosophy decreed by the Hawaiʻi State motto,
                   <em>"Ua Mau ke Ea o ka 'Āina i ka Pono"</em> (The life of the land is perpetuated in righteousness).
                 </p>
-              </div>
-              <div className="philosophy-image">
-                <Image
-                  src="/images/haleakala-mountains.jpg"
-                  alt="Haleakala mountains and clouds, Hawaii"
-                  width={340}
-                  height={240}
-                  className="philosophy-img"
-                  priority
-                />
+                <div className="philosophy-image-centered">
+                  <Image
+                    src="/images/haleakala-mountains.jpg"
+                    alt="Haleakala mountains and clouds, Hawaii"
+                    width={400}
+                    height={300}
+                    className="philosophy-img-centered"
+                    priority
+                  />
+                </div>
               </div>
             </div>
             <div className="main-content commitment-row">
-              <div className="commitment-image">
-                <Image
-                  src="/images/Commitment.jpg"
-                  alt="Commitment"
-                  width={340}
-                  height={340}
-                  className="commitment-img"
-                  priority
-                />
-              </div>
               <div className="commitment-text">
                 <h2>Our Commitment</h2>
                 <p>
@@ -79,6 +69,16 @@ export default function About() {
                 <p>
                   We honor the leadership of our Republican forefathers who passionately believed and applied these principles and values so well with special appreciation for the leadership of President Abraham Lincoln, Prince Jonah Kuhio Kalaniana'ole, and President Ronald Reagan.
                 </p>
+                <div className="commitment-image-centered">
+                  <Image
+                    src="/images/Commitment.jpg"
+                    alt="Commitment"
+                    width={400}
+                    height={300}
+                    className="commitment-img-centered"
+                    priority
+                  />
+                </div>
               </div>
             </div>
           </div>
