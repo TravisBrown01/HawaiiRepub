@@ -75,38 +75,53 @@ export default function VotersWithFelonyConvictions() {
 
               {/* Legal References */}
               <div className="application-section">
-                <h2>Legal References</h2>
+                <h2>Legal References & Official Documents</h2>
                 <p>
                   For complete information about voting rights for individuals with felony convictions, 
-                  please refer to the following legal sources:
+                  please refer to the following legal sources and official documents:
                 </p>
                 <div className="forms-grid">
-                  <div className="form-card">
+                  <a 
+                    href="https://lrb.hawaii.gov/constitution/#articleii" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="form-card"
+                  >
                     <div className="form-icon">
                       <i className="fas fa-gavel"></i>
                     </div>
                     <h3>Hawaii State Constitution</h3>
-                    <p>Article II, Section 2</p>
+                    <p>Article II, Section 2 - Disqualification</p>
                     <div className="form-cta">View Constitution →</div>
-                  </div>
+                  </a>
 
-                  <div className="form-card">
+                  <a 
+                    href="https://www.capitol.hawaii.gov/hrscurrent/Vol14_Ch0801-0899/HRS0831/HRS_0831-0002.htm" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="form-card"
+                  >
                     <div className="form-icon">
                       <i className="fas fa-book"></i>
                     </div>
                     <h3>Hawaii Revised Statutes</h3>
-                    <p>HRS §831-2</p>
+                    <p>HRS §831-2 - Disqualification from voting</p>
                     <div className="form-cta">View Statutes →</div>
-                  </div>
+                  </a>
 
-                  <div className="form-card">
+                  <a 
+                    href="/documents/Impact-of-a-Felony-Conviction.pdf" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="form-card"
+                  >
                     <div className="form-icon">
-                      <i className="fas fa-balance-scale"></i>
+                      <i className="fas fa-file-pdf"></i>
                     </div>
-                    <h3>Legal Resources</h3>
-                    <p>Additional legal information and resources</p>
-                    <div className="form-cta">Get Help →</div>
-                  </div>
+                    <h3>Impact of a Felony Conviction</h3>
+                    <p>Official document on voting rights restoration</p>
+                    <div className="form-cta">Download PDF →</div>
+                  </a>
                 </div>
               </div>
 
