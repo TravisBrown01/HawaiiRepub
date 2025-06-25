@@ -269,45 +269,65 @@ export default function ElectionEducation() {
               <div className="special-voters-section">
                 <h2>Special Voter Categories</h2>
                 <div className="special-voters-grid">
-                  <div className="special-voter-card">
+                  <a 
+                    href="/college-students" 
+                    className="special-voter-card"
+                  >
                     <div className="voter-icon">
                       <i className="fas fa-graduation-cap"></i>
                     </div>
                     <h3>College Students</h3>
                     <p>Students away at college can request ballots to be mailed to their school address or vote absentee.</p>
-                  </div>
+                    <div className="voter-cta">Learn More →</div>
+                  </a>
 
-                  <div className="special-voter-card">
+                  <a 
+                    href="/houseless-voters" 
+                    className="special-voter-card"
+                  >
                     <div className="voter-icon">
                       <i className="fas fa-home"></i>
                     </div>
                     <h3>Houseless Voters</h3>
                     <p>Voters without a permanent address can still register and vote using alternative address options.</p>
-                  </div>
+                    <div className="voter-cta">Learn More →</div>
+                  </a>
 
-                  <div className="special-voter-card">
+                  <a 
+                    href="/military-overseas-voters" 
+                    className="special-voter-card"
+                  >
                     <div className="voter-icon">
                       <i className="fas fa-shield-alt"></i>
                     </div>
                     <h3>Military/Overseas Voters</h3>
                     <p>Military personnel and overseas voters have special procedures for receiving and returning ballots.</p>
-                  </div>
+                    <div className="voter-cta">Learn More →</div>
+                  </a>
 
-                  <div className="special-voter-card">
+                  <a 
+                    href="/voters-requiring-assistance" 
+                    className="special-voter-card"
+                  >
                     <div className="voter-icon">
                       <i className="fas fa-wheelchair"></i>
                     </div>
                     <h3>Voters Requiring Assistance</h3>
                     <p>Voters with disabilities can request accessible voting options and assistance at polling places.</p>
-                  </div>
+                    <div className="voter-cta">Learn More →</div>
+                  </a>
 
-                  <div className="special-voter-card">
+                  <a 
+                    href="/voters-with-felony-convictions" 
+                    className="special-voter-card"
+                  >
                     <div className="voter-icon">
                       <i className="fas fa-balance-scale"></i>
                     </div>
                     <h3>Voters with Felony Convictions</h3>
                     <p>Individuals with felony convictions may have their voting rights restored depending on their circumstances.</p>
-                  </div>
+                    <div className="voter-cta">Learn More →</div>
+                  </a>
                 </div>
               </div>
 
@@ -315,83 +335,73 @@ export default function ElectionEducation() {
               <div className="resources-section">
                 <h2>Additional Resources</h2>
                 <div className="resources-grid">
-                  <div className="resource-card">
+                  <a 
+                    href="https://olvr.hawaii.gov" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="resource-card"
+                  >
                     <div className="resource-icon">
                       <i className="fas fa-id-card"></i>
                     </div>
                     <h3>Voter Registration</h3>
                     <p>Register to vote or update your registration information.</p>
-                    <a 
-                      href="https://olvr.hawaii.gov" 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="resource-btn"
-                    >
-                      Register Now
-                    </a>
-                  </div>
+                    <div className="resource-cta">Register Now →</div>
+                  </a>
 
-                  <div className="resource-card">
+                  <a 
+                    href="https://elections.hawaii.gov/voter-service-centers-and-places-of-deposit/" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="resource-card"
+                  >
                     <div className="resource-icon">
                       <i className="fas fa-map"></i>
                     </div>
                     <h3>Voting Locations</h3>
                     <p>Find your nearest polling place and ballot drop box locations.</p>
-                    <a 
-                      href="https://elections.hawaii.gov/voter-service-centers-and-places-of-deposit/" 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="resource-btn"
-                    >
-                      Find Locations
-                    </a>
-                  </div>
+                    <div className="resource-cta">Find Locations →</div>
+                  </a>
 
-                  <div className="resource-card">
+                  <a 
+                    href="https://ballotstatus.hawaii.gov" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="resource-card"
+                  >
                     <div className="resource-icon">
                       <i className="fas fa-binoculars"></i>
                     </div>
                     <h3>Ballot Status</h3>
                     <p>Track the status of your mail-in ballot and ensure it's counted.</p>
-                    <a 
-                      href="https://ballotstatus.hawaii.gov" 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="resource-btn"
-                    >
-                      Track Ballot
-                    </a>
-                  </div>
+                    <div className="resource-cta">Track Ballot →</div>
+                  </a>
 
-                  <div className="resource-card">
+                  <a 
+                    href="https://elections.hawaii.gov/volunteer/" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="resource-card"
+                  >
                     <div className="resource-icon">
                       <i className="fas fa-user-check"></i>
                     </div>
                     <h3>Poll Worker Application</h3>
                     <p>Help ensure fair elections by becoming a poll worker.</p>
-                    <a 
-                      href="https://elections.hawaii.gov/volunteer/" 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="resource-btn"
-                    >
-                      Apply Now
-                    </a>
-                  </div>
+                    <div className="resource-cta">Apply Now →</div>
+                  </a>
 
-                  <div className="resource-card">
+                  <a 
+                    href="tel:808-453-VOTE" 
+                    className="resource-card"
+                  >
                     <div className="resource-icon">
                       <i className="fas fa-phone"></i>
                     </div>
                     <h3>Contact Elections Office</h3>
                     <p>Get help with voting questions and concerns.</p>
-                    <a 
-                      href="tel:808-453-VOTE" 
-                      className="resource-btn"
-                    >
-                      Call Now
-                    </a>
-                  </div>
+                    <div className="resource-cta">Call Now →</div>
+                  </a>
                 </div>
               </div>
 
