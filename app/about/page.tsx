@@ -89,73 +89,67 @@ export default function About() {
           <div className="container">
             <h2>Our Core Values</h2>
             <div className="values-grid">
-              <div className="value-card no-bg">
-                <div className="value-content">
-                  <div className="value-icon">
-                    <i className="fa-regular fa-cross"></i>
-                  </div>
-                  <h3>Faith</h3>
-                  <p>
-                    {showFaithMore ? (
-                      <>The Republican party, is rooted in principles of limited government, personal liberty, and economic conservatism, the party also has a strong  faith base and traditional values.  the party has cultivated relationship with  conservative Christian organizations, embracing their moral perspectives on issues like abortion and religious freedom. This connection between faith and the Republican platform highlights a commitment to preserving traditional values while advocating for the rights of individuals and religious institutions to practice their beliefs without undue government intervention, as is guaranteed in the First Amendment.</>
-                    ) : (
-                      <>The Republican party, is rooted in principles of limited government, personal liberty, and economic conservatism, the party also has a strong faith base and traditional values. The party has cultivated relationship with conservative Christian organizations, embracing their moral perspectives on issues like abortion and religious freedom.</>
-                    )}
-                  </p>
-                  {!showFaithMore && (
-                    <button className="show-more" onClick={() => setShowFaithMore(true)}>
-                      Show More
-                    </button>
-                  )}
+              <div className="value-card">
+                <div className="value-icon">
+                  <i className="fas fa-cross"></i>
                 </div>
+                <h3>Faith</h3>
+                <p>
+                  {showFaithMore ? (
+                    <>The Republican party, is rooted in principles of limited government, personal liberty, and economic conservatism, the party also has a strong  faith base and traditional values.  the party has cultivated relationship with  conservative Christian organizations, embracing their moral perspectives on issues like abortion and religious freedom. This connection between faith and the Republican platform highlights a commitment to preserving traditional values while advocating for the rights of individuals and religious institutions to practice their beliefs without undue government intervention, as is guaranteed in the First Amendment.</>
+                  ) : (
+                    <>The Republican party, is rooted in principles of limited government, personal liberty, and economic conservatism, the party also has a strong faith base and traditional values. The party has cultivated relationship with conservative Christian organizations, embracing their moral perspectives on issues like abortion and religious freedom.</>
+                  )}
+                </p>
+                {!showFaithMore && (
+                  <button className="show-more" onClick={() => setShowFaithMore(true)}>
+                    Show More
+                  </button>
+                )}
               </div>
-              <div className="value-card no-bg">
-                <div className="value-content">
-                  <div className="value-icon">
-                    <i className="fa-regular fa-heart"></i>
-                  </div>
-                  <h3>Family</h3>
-                  <p>
-                    {showFamilyMore ? (
-                      <>
-                        The Republican Party cherishes the bedrock value of family as the foundational unit of our society, an institution that nurtures our citizens, instills values, and fosters resilience in the face of challenges. We believe in empowering families, recognizing that the best decisions are often those made closest to home. As such, we are committed to policies that reduce governmental intrusion in family matters, promote parental rights, and support family-friendly economic measures.  We envision an America where families are respected, protected, and encouraged to flourish.
-                      </>
-                    ) : (
-                      <>
-                        "The Republican Party cherishes the bedrock value of family as the foundational unit of our society, an institution that nurtures our citizens, instills values, and fosters resilience in the face of challenges. We believe in empowering families, recognizing that the best decisions are often those made closest to home. As such, we are committed to policies that strengthen family bonds and support parental rights."
-                      </>
-                    )}
-                  </p>
-                  {!showFamilyMore && (
-                    <button className="show-more" onClick={() => setShowFamilyMore(true)}>
-                      Show More
-                    </button>
-                  )}
+              <div className="value-card">
+                <div className="value-icon">
+                  <i className="fas fa-heart"></i>
                 </div>
+                <h3>Family</h3>
+                <p>
+                  {showFamilyMore ? (
+                    <>
+                      The Republican Party cherishes the bedrock value of family as the foundational unit of our society, an institution that nurtures our citizens, instills values, and fosters resilience in the face of challenges. We believe in empowering families, recognizing that the best decisions are often those made closest to home. As such, we are committed to policies that reduce governmental intrusion in family matters, promote parental rights, and support family-friendly economic measures.  We envision an America where families are respected, protected, and encouraged to flourish.
+                    </>
+                  ) : (
+                    <>
+                      "The Republican Party cherishes the bedrock value of family as the foundational unit of our society, an institution that nurtures our citizens, instills values, and fosters resilience in the face of challenges. We believe in empowering families, recognizing that the best decisions are often those made closest to home. As such, we are committed to policies that strengthen family bonds and support parental rights."
+                    </>
+                  )}
+                </p>
+                {!showFamilyMore && (
+                  <button className="show-more" onClick={() => setShowFamilyMore(true)}>
+                    Show More
+                  </button>
+                )}
               </div>
-              <div className="value-card no-bg">
-                <div className="value-content">
-                  <div className="value-icon">
-                    <i className="fa-regular fa-flag"></i>
-                  </div>
-                  <h3>Freedom</h3>
-                  <p>
-                    {showFreedomMore ? (
-                      <>
-                        The Republican Party believes in the fundamental principle of freedom as the cornerstone of our great nation. This platform is built on the conviction that every American has the right to pursue their own version of the American Dream, unencumbered by intrusive governmental overreach. Our policies aim to limit the size and scope of government, reducing unnecessary regulations on individuals and businesses alike, thereby fostering an environment where personal responsibility is championed and individual liberty flourishes. We stand firm in our belief that the rights and freedoms are given by God and guaranteed in our founding documents.  We must work to protect these freedoms for future generations, ensuring that America remains a Constitutional Republic.
-                      </>
-                    ) : (
-                      <>
-                        The Republican Party believes in the fundamental principle of freedom as the cornerstone of our great nation. This platform is built on the conviction that every American has the right to pursue their own version of the American Dream, unencumbered by intrusive governmental overreach. Our policies aim to limit the size and scope of government while maximizing individual liberty and opportunity.
-                      </>
-                    )}
-                  </p>
-                  {!showFreedomMore && (
-                    <button className="show-more" onClick={() => setShowFreedomMore(true)}>
-                      Show More
-                    </button>
-                  )}
+              <div className="value-card">
+                <div className="value-icon">
+                  <i className="fas fa-flag"></i>
                 </div>
+                <h3>Freedom</h3>
+                <p>
+                  {showFreedomMore ? (
+                    <>
+                      The Republican Party believes in the fundamental principle of freedom as the cornerstone of our great nation. This platform is built on the conviction that every American has the right to pursue their own version of the American Dream, unencumbered by intrusive governmental overreach. Our policies aim to limit the size and scope of government, reducing unnecessary regulations on individuals and businesses alike, thereby fostering an environment where personal responsibility is championed and individual liberty flourishes. We stand firm in our belief that the rights and freedoms are given by God and guaranteed in our founding documents.  We must work to protect these freedoms for future generations, ensuring that America remains a Constitutional Republic.
+                    </>
+                  ) : (
+                    <>
+                      The Republican Party believes in the fundamental principle of freedom as the cornerstone of our great nation. This platform is built on the conviction that every American has the right to pursue their own version of the American Dream, unencumbered by intrusive governmental overreach. Our policies aim to limit the size and scope of government while maximizing individual liberty and opportunity.
+                    </>
+                  )}
+                </p>
+                {!showFreedomMore && (
+                  <button className="show-more" onClick={() => setShowFreedomMore(true)}>
+                    Show More
+                  </button>
+                )}
               </div>
             </div>
           </div>
@@ -174,51 +168,51 @@ export default function About() {
             </div>
             <div className="principles-grid">
               <div className="principle-item no-bg">
-                <i className="fa-regular fa-scroll"></i>
+                <i className="fas fa-scroll"></i>
                 <p>"The laws of nature and nature's God," and we support the strict adherence to the original language and intent of the Declaration of Independence and the Constitutions of the United States and of Hawaiʻi.</p>
               </div>
               <div className="principle-item no-bg">
-                <i className="fa-regular fa-heart"></i>
+                <i className="fas fa-heart"></i>
                 <p>The sanctity of innocent human life, created in the image of God, which should be equally protected from fertilization to natural death.</p>
               </div>
               <div className="principle-item no-bg">
-                <i className="fa-regular fa-shield"></i>
+                <i className="fas fa-shield"></i>
                 <p>Preserving individual, Hawaiʻi state, and American sovereignty and freedom.</p>
               </div>
               <div className="principle-item no-bg">
-                <i className="fa-regular fa-building"></i>
+                <i className="fas fa-building"></i>
                 <p>Limiting government power to those items enumerated in the United States and Hawaiʻi Constitutions.</p>
               </div>
               <div className="principle-item no-bg">
-                <i className="fa-regular fa-user-check"></i>
+                <i className="fas fa-user-check"></i>
                 <p>Personal accountability and responsibility.</p>
               </div>
               <div className="principle-item no-bg">
-                <i className="fa-regular fa-rings-wedding"></i>
+                <i className="fas fa-heart"></i>
                 <p>Self-sufficient families, founded on the traditional marriage of a biological man and biological woman.</p>
               </div>
               <div className="principle-item no-bg">
-                <i className="fa-regular fa-graduation-cap"></i>
+                <i className="fas fa-graduation-cap"></i>
                 <p>Having an educated population, with parents having the freedom of choice for the education of their children.</p>
               </div>
               <div className="principle-item no-bg">
-                <i className="fa-regular fa-shield-halved"></i>
+                <i className="fas fa-shield-alt"></i>
                 <p>The unalienable right of the people to defend themselves, their family, and their property.</p>
               </div>
               <div className="principle-item no-bg">
-                <i className="fa-regular fa-chart-line"></i>
+                <i className="fas fa-chart-line"></i>
                 <p>A free enterprise society unencumbered by government interference or subsidies.</p>
               </div>
               <div className="principle-item no-bg">
-                <i className="fa-regular fa-medal"></i>
+                <i className="fas fa-medal"></i>
                 <p>Honoring all those who serve and protect freedoms.</p>
               </div>
               <div className="principle-item no-bg">
-                <i className="fa-regular fa-user-shield"></i>
+                <i className="fas fa-user-shield"></i>
                 <p>Individual liberty and the right to privacy.</p>
               </div>
               <div className="principle-item no-bg">
-                <i className="fa-regular fa-handshake"></i>
+                <i className="fas fa-handshake"></i>
                 <p>We champion personal integrity, honor, and ethical behavior.</p>
               </div>
             </div>
@@ -233,7 +227,7 @@ export default function About() {
               <div className="download-card no-bg">
                 <div className="download-content">
                   <div className="download-icon">
-                    <i className="fa-regular fa-file-pdf"></i>
+                    <i className="fas fa-file-pdf"></i>
                   </div>
                   <h3>Final 2024 HRP Platform including Convention Updates</h3>
                   <p>Download the complete platform document with all convention updates and amendments.</p>
@@ -243,7 +237,7 @@ export default function About() {
                     rel="noopener noreferrer"
                     className="download-btn"
                   >
-                    <i className="fa-regular fa-download"></i>
+                    <i className="fas fa-download"></i>
                     DOWNLOAD
                   </a>
                 </div>
@@ -251,7 +245,7 @@ export default function About() {
               <div className="download-card no-bg">
                 <div className="download-content">
                   <div className="download-icon">
-                    <i className="fa-regular fa-file-pdf"></i>
+                    <i className="fas fa-file-pdf"></i>
                   </div>
                   <h3>Final Issue Resolutions approved at HRP Convention 2024</h3>
                   <p>Access all resolutions and policy positions approved during the 2024 convention.</p>
@@ -261,7 +255,7 @@ export default function About() {
                     rel="noopener noreferrer"
                     className="download-btn"
                   >
-                    <i className="fa-regular fa-download"></i>
+                    <i className="fas fa-download"></i>
                     DOWNLOAD
                   </a>
                 </div>

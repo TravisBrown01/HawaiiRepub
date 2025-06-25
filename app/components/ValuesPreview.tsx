@@ -2,19 +2,19 @@ import Link from 'next/link';
 
 const values = [
   {
-    icon: 'fa-regular fa-cross',
+    icon: 'fas fa-cross',
     title: 'Faith',
-    description: 'Rooted in faith and traditional values, we support religious freedom and the right to practice beliefs without government interference.'
+    description: 'We believe in the importance of faith and traditional values.'
   },
   {
-    icon: 'fa-regular fa-heart',
+    icon: 'fas fa-heart',
     title: 'Family',
-    description: 'We cherish the family as the foundation of society and support policies that empower and protect families in Hawaii.'
+    description: 'We support strong families as the foundation of society.'
   },
   {
-    icon: 'fa-regular fa-flag',
+    icon: 'fas fa-flag',
     title: 'Freedom',
-    description: 'We believe in individual liberty, limited government, and the protection of God-given rights for all.'
+    description: 'We defend individual liberty and constitutional rights.'
   }
 ];
 

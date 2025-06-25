@@ -29,47 +29,41 @@ export default function Actions() {
 
   const actions = [
     {
-      icon: 'fa-regular fa-address-card',
       title: 'Register to Vote',
-      description: 'Make your voice heard in Hawaii. Register to vote today and participate in our democracy.',
+      description: 'Make sure you\'re registered to vote in Hawaii elections.',
       link: 'https://olvr.hawaii.gov',
-      linkText: 'Register Now'
+      icon: 'fas fa-address-card',
     },
     {
-      icon: 'fa-regular fa-handshake',
-      title: 'Volunteer',
-      description: 'Join our team of passionate volunteers and help make a difference in your community.',
+      title: 'Join the Party',
+      description: 'Become a member of the Hawaii Republican Party.',
+      link: '#join-form',
+      icon: 'fas fa-handshake',
+    },
+    {
+      title: 'Get Involved',
+      description: 'Find ways to volunteer and make a difference.',
       link: '#',
-      linkText: 'Volunteer Today'
+      icon: 'fas fa-compass',
     },
     {
-      icon: 'fa-regular fa-compass',
-      title: 'Find Your Local GOP',
-      description: 'Connect with your local Republican Party chapter and get involved at the county level.',
-      link: '#',
-      linkText: 'View Counties'
+      title: 'Learn More',
+      description: 'Educate yourself about our platform and values.',
+      link: '/about',
+      icon: 'fas fa-book-open',
     },
     {
-      icon: 'fa-regular fa-book-open',
-      title: 'Election Education',
-      description: 'Learn about the election process, your rights as a voter, and how to make your vote count.',
-      link: '#',
-      linkText: 'Learn More'
-    },
-    {
-      icon: 'fa-regular fa-map-marker-alt',
-      title: 'Where to Vote',
-      description: 'Find your nearest polling place and get all the information you need to cast your ballot.',
+      title: 'Find Voting Locations',
+      description: 'Locate your nearest polling place and ballot drop boxes.',
       link: 'https://elections.hawaii.gov/voter-service-centers-and-places-of-deposit/',
-      linkText: 'Find Polling Place'
+      icon: 'fas fa-map-marker-alt',
     },
     {
-      icon: 'fa-regular fa-donate',
       title: 'Donate',
-      description: 'Support our mission and help us build a brighter future for Hawaii. Every contribution counts.',
-      link: 'https://secure.winred.com/hawaiigop/donate',
-      linkText: 'Donate Now'
-    }
+      description: 'Support our mission to keep Hawaii golden.',
+      link: 'https://www.hawaiirepublicanparty.com/donate',
+      icon: 'fas fa-donate',
+    },
   ];
 
   return (
@@ -87,7 +81,14 @@ export default function Actions() {
           </span>
           <h3>{action.title}</h3>
           <p>{action.description}</p>
-          <Link href={action.link} className="action-btn">{action.linkText}</Link>
+          <Link href={action.link} className="action-btn">
+            {action.title === 'Register to Vote' ? 'Register Now' :
+             action.title === 'Join the Party' ? 'Join Now' :
+             action.title === 'Get Involved' ? 'Get Started' :
+             action.title === 'Learn More' ? 'Learn More' :
+             action.title === 'Find Voting Locations' ? 'Find Locations' :
+             action.title === 'Donate' ? 'Donate Now' : 'Learn More'}
+          </Link>
         </div>
       ))}
     </section>

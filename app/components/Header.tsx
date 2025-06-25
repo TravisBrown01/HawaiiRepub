@@ -49,7 +49,7 @@ export default function Header() {
       {/* Navigation */}
       <nav className={`nav ${isMenuOpen ? 'nav-open' : ''}`}>
         <Link href="/about" onClick={() => setIsMenuOpen(false)}>About</Link>
-        <Link href="#" onClick={() => setIsMenuOpen(false)}>Election Integrity</Link>
+        <Link href="/election-integrity" onClick={() => setIsMenuOpen(false)}>Election Integrity</Link>
         <Link href="#" onClick={() => setIsMenuOpen(false)}>Convention</Link>
         <Link href="#" onClick={() => setIsMenuOpen(false)}>Resources</Link>
         <Link href="#" onClick={() => setIsMenuOpen(false)}>Store</Link>
