@@ -690,139 +690,133 @@ footer .socials a:hover {
   transform: scale(1.02);
 }
 
-/* Core Values Section */
+/* Core Values Section - Apple Design Guidelines */
 .core-values-section {
-  background: var(--gop-gray-card);
+  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
   padding: 6rem 0;
-  border-top: 1px solid var(--gop-gray-border);
-  border-bottom: 1px solid var(--gop-gray-border);
 }
 
 .core-values-section h2 {
   font-family: 'Montserrat', Arial, sans-serif;
   font-size: 3rem;
   color: var(--gop-red);
-  text-align: center;
-  margin-bottom: 4rem;
+  margin-bottom: 3rem;
   font-weight: 700;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.02em;
+  text-align: center;
 }
 
 .values-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-  gap: 3rem;
+  grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+  gap: 2.5rem;
   max-width: 1200px;
   margin: 0 auto;
+  padding: 0 2rem;
 }
 
 .value-card {
-  background: var(--gop-gray-bg);
-  border-radius: 24px;
-  padding: 0;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-  border: 1px solid var(--gop-gray-border);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(20px);
+  border-radius: 20px;
+  padding: 3rem 2.5rem;
+  box-shadow: 
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   text-align: center;
   position: relative;
   overflow: hidden;
-  min-height: 500px;
+  min-height: 480px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
-.value-bg-image {
+.value-card::before {
+  content: '';
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
-  bottom: 0;
-  z-index: 1;
-}
-
-.value-img {
-  object-fit: cover;
-  object-position: center;
-  opacity: 0.15;
+  height: 4px;
+  background: linear-gradient(90deg, var(--gop-red) 0%, #a91d1d 100%);
+  opacity: 0;
   transition: opacity 0.3s ease;
 }
 
-.value-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(247,247,250,0.98) 100%);
-  z-index: 2;
-}
-
-.value-content {
-  position: relative;
-  z-index: 3;
-  padding: 3rem 2.5rem;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
 .value-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 12px 40px rgba(198,40,40,0.15);
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 
+    0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  border-color: rgba(198, 40, 40, 0.2);
 }
 
-.value-card:hover .value-img {
-  opacity: 0.2;
+.value-card:hover::before {
+  opacity: 1;
 }
 
 .value-icon {
-  font-size: 3.5rem;
+  font-size: 3rem;
   color: var(--gop-red);
   margin-bottom: 2rem;
   text-align: center;
-  transition: transform 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  opacity: 0.9;
 }
 
 .value-card:hover .value-icon {
   transform: scale(1.1);
+  opacity: 1;
 }
 
 .value-card h3 {
   font-family: 'Montserrat', Arial, sans-serif;
-  font-size: 2rem;
+  font-size: 1.8rem;
   color: var(--gop-text);
   margin-bottom: 1.5rem;
   font-weight: 700;
   text-align: center;
   letter-spacing: -0.01em;
+  line-height: 1.2;
 }
 
 .value-card p {
-  font-size: 1.1rem;
+  font-size: 1.05rem;
   line-height: 1.7;
-  color: var(--gop-text);
+  color: var(--gop-text-light);
   margin-bottom: 2rem;
   flex-grow: 1;
+  font-weight: 400;
 }
 
 .value-card .show-more {
-  background: var(--gop-red);
+  background: linear-gradient(135deg, var(--gop-red) 0%, #a91d1d 100%);
   color: #fff;
   border: none;
-  padding: 1rem 2rem;
+  padding: 0.875rem 2rem;
   border-radius: 12px;
-  font-size: 1rem;
+  font-size: 0.95rem;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   font-family: 'Montserrat', Arial, sans-serif;
   font-weight: 600;
   letter-spacing: 0.01em;
   align-self: center;
+  box-shadow: 0 2px 4px rgba(198, 40, 40, 0.2);
 }
 
 .value-card .show-more:hover {
-  background: #a91d1d;
+  background: linear-gradient(135deg, #a91d1d 0%, #8b1a1a 100%);
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(198,40,40,0.3);
+  box-shadow: 0 4px 12px rgba(198, 40, 40, 0.3);
+}
+
+.value-card .show-more:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(198, 40, 40, 0.2);
 }
 
 /* Principles Section */
@@ -2002,29 +1996,36 @@ footer .socials a:hover {
   
   /* Core Values Mobile */
   .core-values-section {
-    padding: 2rem 0;
+    padding: 4rem 0;
   }
   
   .core-values-section h2 {
-    font-size: 2rem;
-    margin-bottom: 1.5rem;
+    font-size: 2.5rem;
+    margin-bottom: 2.5rem;
   }
   
   .values-grid {
     grid-template-columns: 1fr;
-    gap: 1.5rem;
+    gap: 2rem;
+    padding: 0 1.5rem;
   }
   
   .value-card {
-    padding: 1.5rem;
+    padding: 2.5rem 2rem;
+    min-height: auto;
   }
   
   .value-card h3 {
-    font-size: 1.4rem;
+    font-size: 1.6rem;
   }
   
   .value-card p {
-    font-size: 0.95rem;
+    font-size: 1rem;
+  }
+  
+  .value-card .show-more {
+    padding: 0.75rem 1.75rem;
+    font-size: 0.9rem;
   }
   
   /* Principles Mobile */
@@ -3388,4 +3389,37 @@ footer .socials a:hover {
   margin-right: 0.5rem;
   font-size: 1.2rem;
   display: inline-block;
+}
+
+@media (max-width: 480px) {
+  .core-values-section {
+    padding: 3rem 0;
+  }
+  
+  .core-values-section h2 {
+    font-size: 2rem;
+    margin-bottom: 2rem;
+  }
+  
+  .values-grid {
+    padding: 0 1rem;
+    gap: 1.5rem;
+  }
+  
+  .value-card {
+    padding: 2rem 1.5rem;
+  }
+  
+  .value-card h3 {
+    font-size: 1.4rem;
+  }
+  
+  .value-card p {
+    font-size: 0.95rem;
+  }
+  
+  .value-card .show-more {
+    padding: 0.7rem 1.5rem;
+    font-size: 0.85rem;
+  }
 }
