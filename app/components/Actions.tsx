@@ -67,7 +67,7 @@ export default function Actions() {
       icon: 'fa-regular fa-donate',
       title: 'Donate',
       description: 'Support our mission and help us build a brighter future for Hawaii. Every contribution counts.',
-      link: '#',
+      link: 'https://secure.winred.com/hawaiigop/donate',
       linkText: 'Donate Now'
     }
   ];
