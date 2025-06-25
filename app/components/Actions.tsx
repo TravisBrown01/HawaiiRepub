@@ -32,7 +32,7 @@ export default function Actions() {
       icon: 'fa-regular fa-address-card',
       title: 'Register to Vote',
       description: 'Make your voice heard in Hawaii. Register to vote today and participate in our democracy.',
-      link: '#',
+      link: 'https://olvr.hawaii.gov',
       linkText: 'Register Now'
     },
     {
