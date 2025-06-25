@@ -60,7 +60,7 @@ export default function Actions() {
       icon: 'fa-regular fa-map-marker-alt',
       title: 'Where to Vote',
       description: 'Find your nearest polling place and get all the information you need to cast your ballot.',
-      link: '#',
+      link: 'https://elections.hawaii.gov/voter-service-centers-and-places-of-deposit/',
       linkText: 'Find Polling Place'
     },
     {
