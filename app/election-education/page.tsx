@@ -62,7 +62,7 @@ export default function ElectionEducation() {
                 <div className="types-grid">
                   <div className="type-card">
                     <div className="type-icon">
-                      <i className="fas fa-vote-yea"></i>
+                      <i className="fas fa-check-circle"></i>
                     </div>
                     <h3>Primary Election</h3>
                     <p>
@@ -175,7 +175,7 @@ export default function ElectionEducation() {
                         rel="noopener noreferrer"
                         className="registration-btn"
                       >
-                        <i className="fas fa-address-card"></i>
+                        <i className="fas fa-id-card"></i>
                         Register to Vote Online
                       </a>
                     </div>
@@ -287,7 +287,7 @@ export default function ElectionEducation() {
 
                   <div className="special-voter-card">
                     <div className="voter-icon">
-                      <i className="fas fa-shield"></i>
+                      <i className="fas fa-shield-alt"></i>
                     </div>
                     <h3>Military/Overseas Voters</h3>
                     <p>Military personnel and overseas voters have special procedures for receiving and returning ballots.</p>
@@ -303,7 +303,7 @@ export default function ElectionEducation() {
 
                   <div className="special-voter-card">
                     <div className="voter-icon">
-                      <i className="fas fa-gavel"></i>
+                      <i className="fas fa-balance-scale"></i>
                     </div>
                     <h3>Voters with Felony Convictions</h3>
                     <p>Individuals with felony convictions may have their voting rights restored depending on their circumstances.</p>
@@ -311,13 +311,13 @@ export default function ElectionEducation() {
                 </div>
               </div>
 
-              {/* Resources */}
+              {/* Resources Section */}
               <div className="resources-section">
                 <h2>Additional Resources</h2>
                 <div className="resources-grid">
                   <div className="resource-card">
                     <div className="resource-icon">
-                      <i className="fas fa-address-card"></i>
+                      <i className="fas fa-id-card"></i>
                     </div>
                     <h3>Voter Registration</h3>
                     <p>Register to vote or update your registration information.</p>
@@ -333,7 +333,7 @@ export default function ElectionEducation() {
 
                   <div className="resource-card">
                     <div className="resource-icon">
-                      <i className="fas fa-map-marker-alt"></i>
+                      <i className="fas fa-map"></i>
                     </div>
                     <h3>Voting Locations</h3>
                     <p>Find your nearest polling place and ballot drop box locations.</p>
@@ -349,7 +349,7 @@ export default function ElectionEducation() {
 
                   <div className="resource-card">
                     <div className="resource-icon">
-                      <i className="fas fa-search"></i>
+                      <i className="fas fa-binoculars"></i>
                     </div>
                     <h3>Ballot Status</h3>
                     <p>Track the status of your mail-in ballot and ensure it's counted.</p>
@@ -496,7 +496,7 @@ export default function ElectionEducation() {
                 <div className="education-grid">
                   <div className="education-card">
                     <div className="education-icon">
-                      <i className="fas fa-book-open"></i>
+                      <i className="fas fa-book"></i>
                     </div>
                     <h3>Voter Rights</h3>
                     <p>Learn about your rights as a voter in Hawaii and how to protect them.</p>
@@ -509,7 +509,7 @@ export default function ElectionEducation() {
                   </div>
                   <div className="education-card">
                     <div className="education-icon">
-                      <i className="fas fa-shield-check"></i>
+                      <i className="fas fa-shield-alt"></i>
                     </div>
                     <h3>Election Security</h3>
                     <p>Understanding how Hawaii's election systems work to ensure security.</p>
@@ -522,7 +522,7 @@ export default function ElectionEducation() {
                   </div>
                   <div className="education-card">
                     <div className="education-icon">
-                      <i className="fas fa-users"></i>
+                      <i className="fas fa-user-friends"></i>
                     </div>
                     <h3>Poll Watching</h3>
                     <p>How to become an effective poll watcher and monitor election integrity.</p>

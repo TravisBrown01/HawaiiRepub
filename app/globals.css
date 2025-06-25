@@ -3371,60 +3371,7 @@ footer .socials a:hover {
   }
 }
 
-/* Font Awesome Fallbacks */
-.action-icon i,
-.type-icon i,
-.education-icon i,
-.voter-icon i,
-.election-action-card .action-icon i,
-.value-icon i,
-.principle-item i,
-.download-icon i,
-.commitment-icon i,
-.resource-icon i {
-  font-family: "Font Awesome 6 Free", "Font Awesome 6 Pro", "FontAwesome", sans-serif;
-  font-weight: 900;
-  font-style: normal;
-  display: inline-block;
-  text-rendering: auto;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  line-height: 1;
-}
-
-/* Ensure icons are visible even if Font Awesome fails to load */
-.action-icon i:before,
-.type-icon i:before,
-.education-icon i:before,
-.voter-icon i:before,
-.election-action-card .action-icon i:before,
-.value-icon i:before,
-.principle-item i:before,
-.download-icon i:before,
-.commitment-icon i:before,
-.resource-icon i:before {
-  content: attr(data-icon);
-}
-
-/* Fallback text for screen readers */
-.action-icon i[aria-hidden="true"],
-.type-icon i[aria-hidden="true"],
-.education-icon i[aria-hidden="true"],
-.voter-icon i[aria-hidden="true"],
-.election-action-card .action-icon i[aria-hidden="true"],
-.value-icon i[aria-hidden="true"],
-.principle-item i[aria-hidden="true"],
-.download-icon i[aria-hidden="true"],
-.commitment-icon i[aria-hidden="true"],
-.resource-icon i[aria-hidden="true"] {
-  position: absolute;
-  left: -9999px;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-}
-
-/* Ensure icons have proper spacing and alignment */
+/* Icon containers - simple styling */
 .action-icon,
 .type-icon,
 .education-icon,
@@ -3432,24 +3379,13 @@ footer .socials a:hover {
 .value-icon,
 .commitment-icon,
 .resource-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 60px;
-  height: 60px;
-  margin: 0 auto 1rem;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  margin-bottom: 1rem;
 }
 
-.action-icon i,
-.type-icon i,
-.education-icon i,
-.voter-icon i,
-.value-icon i,
-.commitment-icon i,
-.resource-icon i {
-  font-size: 1.5rem;
-  color: #dc3545;
+/* Registration button icon styling */
+.registration-btn i {
+  margin-right: 0.5rem;
+  font-size: 1.2rem;
+  display: inline-block;
 }

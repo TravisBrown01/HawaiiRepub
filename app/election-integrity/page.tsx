@@ -43,7 +43,7 @@ export default function ElectionIntegrity() {
               <div className="election-actions-grid">
                 <div className="election-action-card">
                   <div className="action-icon">
-                    <i className="fas fa-flag"></i>
+                    <i className="fas fa-exclamation-triangle"></i>
                   </div>
                   <h3>Report Issues</h3>
                   <p>Report suspicious activities or election integrity concerns.</p>
@@ -57,7 +57,7 @@ export default function ElectionIntegrity() {
 
                 <div className="election-action-card">
                   <div className="action-icon">
-                    <i className="fas fa-users"></i>
+                    <i className="fas fa-user-friends"></i>
                   </div>
                   <h3>Become a Poll Watcher</h3>
                   <p>Help monitor elections and ensure transparency at polling places.</p>
@@ -73,7 +73,7 @@ export default function ElectionIntegrity() {
 
                 <div className="election-action-card">
                   <div className="action-icon">
-                    <i className="fas fa-graduation-cap"></i>
+                    <i className="fas fa-book"></i>
                   </div>
                   <h3>Get Educated</h3>
                   <p>Learn about election processes and your rights as a voter.</p>
@@ -87,7 +87,7 @@ export default function ElectionIntegrity() {
 
                 <div className="election-action-card">
                   <div className="action-icon">
-                    <i className="fas fa-address-card"></i>
+                    <i className="fas fa-id-card"></i>
                   </div>
                   <h3>Register to Vote</h3>
                   <p>Ensure you're registered and your information is current.</p>
@@ -103,7 +103,7 @@ export default function ElectionIntegrity() {
 
                 <div className="election-action-card">
                   <div className="action-icon">
-                    <i className="fas fa-search"></i>
+                    <i className="fas fa-binoculars"></i>
                   </div>
                   <h3>Track Your Ballot</h3>
                   <p>Monitor your ballot's journey from mailing to counting.</p>
@@ -119,7 +119,7 @@ export default function ElectionIntegrity() {
 
                 <div className="election-action-card">
                   <div className="action-icon">
-                    <i className="fas fa-map-marker-alt"></i>
+                    <i className="fas fa-map"></i>
                   </div>
                   <h3>Find Voting Locations</h3>
                   <p>Locate your nearest polling place and ballot drop boxes.</p>
@@ -229,7 +229,7 @@ export default function ElectionIntegrity() {
                 <div className="education-grid">
                   <div className="education-card">
                     <div className="education-icon">
-                      <i className="fas fa-gavel"></i>
+                      <i className="fas fa-balance-scale"></i>
                     </div>
                     <h3>Voter Rights</h3>
                     <p>Learn about your rights as a voter in Hawaii and how to protect them.</p>
@@ -242,7 +242,7 @@ export default function ElectionIntegrity() {
                   </div>
                   <div className="education-card">
                     <div className="education-icon">
-                      <i className="fas fa-shield-alt"></i>
+                      <i className="fas fa-lock"></i>
                     </div>
                     <h3>Election Security</h3>
                     <p>Understanding how Hawaii's election systems work to ensure security.</p>
@@ -268,7 +268,7 @@ export default function ElectionIntegrity() {
                   </div>
                   <div className="education-card">
                     <div className="education-icon">
-                      <i className="fas fa-users"></i>
+                      <i className="fas fa-hands-helping"></i>
                     </div>
                     <h3>Community Engagement</h3>
                     <p>Get involved in your community to promote election integrity.</p>
