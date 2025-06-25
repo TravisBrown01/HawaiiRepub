@@ -50,9 +50,9 @@ export default function Header() {
       <nav className={`nav ${isMenuOpen ? 'nav-open' : ''}`}>
         <Link href="/about" onClick={() => setIsMenuOpen(false)}>About</Link>
         <Link href="/election-integrity" onClick={() => setIsMenuOpen(false)}>Election Integrity</Link>
-        <Link href="#" onClick={() => setIsMenuOpen(false)}>Convention</Link>
+        <Link href="/counties" onClick={() => setIsMenuOpen(false)}>Counties</Link>
         <Link href="#" onClick={() => setIsMenuOpen(false)}>Resources</Link>
-        <Link href="#" onClick={() => setIsMenuOpen(false)}>Store</Link>
+        <Link href="https://secure.winred.com/hawaiigop/storefront/" target="_blank" rel="noopener noreferrer" onClick={() => setIsMenuOpen(false)}>Store</Link>
         <Link href="#" onClick={() => setIsMenuOpen(false)}>Contact</Link>
       </nav>
 

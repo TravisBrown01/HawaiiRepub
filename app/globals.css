@@ -3423,3 +3423,527 @@ footer .socials a:hover {
     font-size: 0.85rem;
   }
 }
+
+/* Counties Page Styles */
+.counties-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f8fafc 0%, #ffffff 50%, #fef2f2 100%);
+}
+
+.counties-hero {
+  background: linear-gradient(135deg, #fff 0%, var(--gop-red-light) 100%);
+  padding: 4rem 0 3rem 0;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.counties-hero .container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.counties-hero-logo {
+  margin-bottom: 2rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #fff;
+  border-radius: 50%;
+  box-shadow: 0 4px 32px rgba(198,40,40,0.08);
+  padding: 1rem;
+  width: 140px;
+  height: 140px;
+  margin: 0 auto 2rem auto;
+}
+
+.counties-hero-logo img {
+  width: 100px;
+  height: 100px;
+  object-fit: contain;
+}
+
+.counties-hero::before {
+  content: '';
+  display: none;
+}
+
+.counties-hero h1 {
+  font-family: 'Montserrat', Arial, sans-serif;
+  font-size: 3.5rem;
+  font-weight: 900;
+  color: var(--gop-red);
+  margin-bottom: 1rem;
+  letter-spacing: 1px;
+}
+
+.counties-hero .subtitle {
+  font-size: 1.4rem;
+  color: var(--gop-text-light);
+  font-weight: 400;
+  margin-bottom: 0;
+}
+
+.counties-content {
+  padding: 3rem 0;
+}
+
+.counties-content .container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.counties-intro {
+  text-align: center;
+  max-width: 800px;
+  margin: 0 auto 4rem auto;
+}
+
+.counties-intro h2 {
+  font-family: 'Montserrat', Arial, sans-serif;
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--gop-red);
+  margin-bottom: 1.5rem;
+}
+
+.counties-intro p {
+  font-size: 1.1rem;
+  line-height: 1.7;
+  color: var(--gop-text);
+  margin-bottom: 1.5rem;
+}
+
+.counties-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 2rem;
+  margin-bottom: 4rem;
+}
+
+.county-card {
+  background: white;
+  border-radius: 20px;
+  padding: 40px;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  border: 1px solid #e5e7eb;
+}
+
+.county-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+}
+
+.county-icon {
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 30px;
+  transition: transform 0.3s ease;
+}
+
+.county-card:hover .county-icon {
+  transform: scale(1.1);
+}
+
+.county-icon i {
+  font-size: 2rem;
+  color: white;
+}
+
+.county-card h3 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 15px;
+}
+
+.county-card p {
+  color: #6b7280;
+  line-height: 1.6;
+  margin-bottom: 25px;
+}
+
+.county-btn {
+  display: inline-block;
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  color: white;
+  padding: 12px 30px;
+  border-radius: 25px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+}
+
+.county-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+}
+
+/* Coalitions Section */
+.coalitions-section {
+  background: #fff;
+  padding: 3rem 0;
+}
+
+.coalitions-section .container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.coalitions-intro {
+  text-align: center;
+  max-width: 800px;
+  margin: 0 auto 4rem auto;
+}
+
+.coalitions-intro h2 {
+  font-family: 'Montserrat', Arial, sans-serif;
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--gop-red);
+  margin-bottom: 1.5rem;
+}
+
+.coalitions-intro p {
+  font-size: 1.1rem;
+  line-height: 1.7;
+  color: var(--gop-text);
+  margin-bottom: 1.5rem;
+}
+
+.coalitions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 2rem;
+  margin-bottom: 4rem;
+}
+
+.coalition-card {
+  background: white;
+  border-radius: 20px;
+  padding: 40px;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  border: 1px solid #e5e7eb;
+}
+
+.coalition-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+}
+
+.coalition-icon {
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, #ec4899 0%, #be185d 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 30px;
+  transition: transform 0.3s ease;
+}
+
+.coalition-card:hover .coalition-icon {
+  transform: scale(1.1);
+}
+
+.coalition-icon i {
+  font-size: 2rem;
+  color: white;
+}
+
+.coalition-card h3 {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 15px;
+}
+
+.coalition-card p {
+  color: #6b7280;
+  line-height: 1.6;
+  margin-bottom: 25px;
+}
+
+.coalition-btn {
+  display: inline-block;
+  background: linear-gradient(135deg, #ec4899 0%, #be185d 100%);
+  color: white;
+  padding: 12px 30px;
+  border-radius: 25px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(236, 72, 153, 0.3);
+}
+
+.coalition-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(236, 72, 153, 0.4);
+}
+
+/* Councils Section */
+.councils-section {
+  background: #fff;
+  padding: 3rem 0;
+}
+
+.councils-section .container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.councils-intro {
+  text-align: center;
+  max-width: 800px;
+  margin: 0 auto 4rem auto;
+}
+
+.councils-intro h2 {
+  font-family: 'Montserrat', Arial, sans-serif;
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--gop-red);
+  margin-bottom: 1.5rem;
+}
+
+.councils-intro p {
+  font-size: 1.1rem;
+  line-height: 1.7;
+  color: var(--gop-text);
+  margin-bottom: 1.5rem;
+}
+
+.councils-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 2rem;
+  margin-bottom: 4rem;
+}
+
+.council-card {
+  background: white;
+  border-radius: 20px;
+  padding: 40px;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  border: 1px solid #e5e7eb;
+}
+
+.council-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+}
+
+.council-icon {
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 30px;
+  transition: transform 0.3s ease;
+}
+
+.council-card:hover .council-icon {
+  transform: scale(1.1);
+}
+
+.council-icon i {
+  font-size: 2rem;
+  color: white;
+}
+
+.council-card h3 {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 15px;
+}
+
+.council-card p {
+  color: #6b7280;
+  line-height: 1.6;
+  margin-bottom: 25px;
+}
+
+.council-btn {
+  display: inline-block;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  padding: 12px 30px;
+  border-radius: 25px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+}
+
+.council-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+}
+
+/* Call to Action Section */
+.counties-cta {
+  background: #fff;
+  padding: 3rem 0;
+}
+
+.counties-cta .container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.cta-content h2 {
+  font-family: 'Montserrat', Arial, sans-serif;
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--gop-red);
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.cta-content p {
+  font-size: 1.1rem;
+  line-height: 1.7;
+  color: var(--gop-text);
+  margin-bottom: 2rem;
+  text-align: center;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.cta-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.cta-btn, .cta-btn--primary {
+  background: var(--gop-red);
+  color: #fff;
+  border: none;
+  border-radius: 32px;
+  font-weight: 600;
+  font-size: 1rem;
+  padding: 0.875rem 2rem;
+  transition: all 0.3s ease;
+  min-height: 44px;
+  box-shadow: var(--gop-shadow);
+}
+
+.cta-btn--primary:hover {
+  background: #a91d1d;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(198,40,40,0.25);
+}
+
+.cta-btn--secondary {
+  background: transparent;
+  color: var(--gop-red);
+  border: 2px solid var(--gop-red);
+}
+
+.cta-btn--secondary:hover {
+  background: var(--gop-red);
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(198,40,40,0.25);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .counties-hero h1 {
+    font-size: 2.5rem;
+  }
+  
+  .counties-hero .subtitle {
+    font-size: 1.2rem;
+  }
+  
+  .counties-intro h2,
+  .coalitions-intro h2,
+  .councils-intro h2,
+  .cta-content h2 {
+    font-size: 2rem;
+  }
+  
+  .counties-grid,
+  .coalitions-grid,
+  .councils-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .county-card,
+  .coalition-card,
+  .council-card {
+    padding: 30px 20px;
+  }
+  
+  .cta-buttons {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .cta-btn {
+    width: 100%;
+    max-width: 300px;
+    text-align: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .counties-hero {
+    padding: 60px 0;
+  }
+  
+  .counties-content,
+  .coalitions-section,
+  .councils-section,
+  .counties-cta {
+    padding: 60px 0;
+  }
+  
+  .counties-hero h1 {
+    font-size: 2rem;
+  }
+  
+  .counties-hero .subtitle {
+    font-size: 1rem;
+  }
+}
+
+.glassy-card {
+  background: rgba(255,255,255,0.85);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.08);
+  border-radius: 1.5rem;
+  border: 1px solid rgba(200,200,200,0.18);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+.glassy-card:hover {
+  box-shadow: 0 16px 40px 0 rgba(31, 38, 135, 0.13);
+  transform: translateY(-2px) scale(1.02);
+}
