@@ -44,7 +44,7 @@ export default function ElectionEducation() {
                   <iframe
                     width="100%"
                     height="400"
-                    src="https://www.youtube.com/embed/VIDEO_ID"
+                    src="https://www.youtube.com/embed/X81ATlsLXzU?si=P6D4fCotUAIshThw"
                     title="Voting in Hawaii Guide"
                     frameBorder="0"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
