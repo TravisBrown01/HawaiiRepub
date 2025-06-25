@@ -444,6 +444,8 @@ body {
   max-width: 1100px;
   margin: 4rem auto 4rem auto;
   padding: 0 2rem;
+  justify-items: center;
+  justify-content: center;
 }
 .actions .card {
   background: var(--gop-gray-card);
@@ -1718,11 +1720,16 @@ footer .socials a:hover {
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 1.5rem;
     padding: 2rem 1rem;
+    justify-items: center;
+    justify-content: center;
+    max-width: 100%;
   }
   
   .actions .card {
     padding: 1.5rem;
     min-height: auto;
+    width: 100%;
+    max-width: 320px;
   }
   
   .actions h3 {
@@ -1746,10 +1753,14 @@ footer .socials a:hover {
     grid-template-columns: 1fr;
     gap: 1.25rem;
     padding: 1.5rem 0.75rem;
+    justify-items: center;
+    justify-content: center;
   }
   
   .actions .card {
     padding: 1.25rem;
+    width: 100%;
+    max-width: 300px;
   }
   
   .actions h3 {
