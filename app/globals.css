@@ -315,8 +315,8 @@ body {
   
   .nav-dropdown-menu {
     position: static;
-    opacity: 1;
-    visibility: visible;
+    opacity: 0;
+    visibility: hidden;
     transform: none;
     box-shadow: none;
     border: none;
@@ -324,6 +324,15 @@ body {
     margin-top: 0;
     width: 100%;
     min-width: auto;
+    max-height: 0;
+    overflow: hidden;
+    transition: opacity 0.2s ease, visibility 0.2s ease, max-height 0.2s ease;
+  }
+  
+  .nav-dropdown-menu.show {
+    opacity: 1;
+    visibility: visible;
+    max-height: 200px;
   }
   
   .nav-dropdown-menu a {
@@ -6752,5 +6761,130 @@ footer .socials a:hover {
   }
   .leader-title {
     font-size: 0.98rem;
+  }
+}
+
+/* Standardized Page Content Styles - For consistent styling across all pages */
+.page-content {
+  padding: 4rem 0;
+}
+
+.page-content .container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.page-intro {
+  text-align: center;
+  margin-bottom: 4rem;
+}
+
+.page-intro h2 {
+  font-family: 'Montserrat', Arial, sans-serif;
+  font-size: 3rem;
+  color: var(--gop-red);
+  margin-bottom: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.page-intro p {
+  font-size: 1.2rem;
+  color: var(--gop-text-light);
+  max-width: 800px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+.page-section {
+  margin-bottom: 4rem;
+}
+
+.page-section h2 {
+  font-family: 'Montserrat', Arial, sans-serif;
+  font-size: 2.5rem;
+  color: var(--gop-red);
+  text-align: center;
+  margin-bottom: 2rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.page-section > p {
+  font-size: 1.1rem;
+  color: var(--gop-text-light);
+  text-align: center;
+  max-width: 700px;
+  margin: 0 auto 3rem auto;
+  line-height: 1.6;
+}
+
+.page-content p {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  color: var(--gop-text);
+  margin-bottom: 1.5rem;
+}
+
+.page-content h3 {
+  font-family: 'Montserrat', Arial, sans-serif;
+  font-size: 1.5rem;
+  color: var(--gop-text);
+  margin-bottom: 1rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+/* Mobile responsive for standardized styles */
+@media (max-width: 768px) {
+  .page-intro h2 {
+    font-size: 2.5rem;
+  }
+  
+  .page-intro p {
+    font-size: 1.1rem;
+  }
+  
+  .page-section h2 {
+    font-size: 2rem;
+  }
+  
+  .page-section > p {
+    font-size: 1rem;
+  }
+  
+  .page-content p {
+    font-size: 1rem;
+  }
+  
+  .page-content h3 {
+    font-size: 1.3rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .page-intro h2 {
+    font-size: 2rem;
+  }
+  
+  .page-intro p {
+    font-size: 1rem;
+  }
+  
+  .page-section h2 {
+    font-size: 1.8rem;
+  }
+  
+  .page-section > p {
+    font-size: 0.95rem;
+  }
+  
+  .page-content p {
+    font-size: 0.95rem;
+  }
+  
+  .page-content h3 {
+    font-size: 1.2rem;
   }
 }

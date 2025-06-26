@@ -27,156 +27,150 @@ export default function CountiesPage() {
         </section>
 
         {/* County GOP Organizations */}
-        <section className="counties-content">
+        <section className="page-content">
           <div className="container">
-            <div className="main-content">
-              <div className="counties-intro">
-                <h2>County GOP Organizations</h2>
-                <p>
-                  Find your local Republican Party organization and get involved in your community. Each county has its own GOP organization working to advance Republican values and support candidates in their area.
-                </p>
+            <div className="page-intro">
+              <h2>County GOP Organizations</h2>
+              <p>
+                Find your local Republican Party organization and get involved in your community. Each county has its own GOP organization working to advance Republican values and support candidates in their area.
+              </p>
+            </div>
+            <div className="values-grid counties-grid">
+              {/* Honolulu County GOP */}
+              <div className="value-card">
+                <div className="value-icon">
+                  <i className="fas fa-map-marker-alt"></i>
+                </div>
+                <h3>Honolulu County Committee</h3>
+                <p>Serving the City and County of Honolulu, the most populous county in Hawaii</p>
+                <a href="https://oahugop.com" target="_blank" rel="noopener noreferrer" className="show-more">Visit Website</a>
               </div>
-              <div className="values-grid counties-grid">
-                {/* Honolulu County GOP */}
-                <div className="value-card">
-                  <div className="value-icon">
-                    <i className="fas fa-map-marker-alt"></i>
-                  </div>
-                  <h3>Honolulu County Committee</h3>
-                  <p>Serving the City and County of Honolulu, the most populous county in Hawaii</p>
-                  <a href="https://oahugop.com" target="_blank" rel="noopener noreferrer" className="show-more">Visit Website</a>
+              {/* Maui County GOP */}
+              <div className="value-card">
+                <div className="value-icon">
+                  <i className="fas fa-map-marker-alt"></i>
                 </div>
-                {/* Maui County GOP */}
-                <div className="value-card">
-                  <div className="value-icon">
-                    <i className="fas fa-map-marker-alt"></i>
-                  </div>
-                  <h3>Maui County GOP</h3>
-                  <p>Representing the islands of Maui, Molokai, and Lanai</p>
-                  <a href="https://mauicountygop.com" target="_blank" rel="noopener noreferrer" className="show-more">Visit Website</a>
+                <h3>Maui County GOP</h3>
+                <p>Representing the islands of Maui, Molokai, and Lanai</p>
+                <a href="https://mauicountygop.com" target="_blank" rel="noopener noreferrer" className="show-more">Visit Website</a>
+              </div>
+              {/* Kauai County GOP */}
+              <div className="value-card">
+                <div className="value-icon">
+                  <i className="fas fa-map-marker-alt"></i>
                 </div>
-                {/* Kauai County GOP */}
-                <div className="value-card">
-                  <div className="value-icon">
-                    <i className="fas fa-map-marker-alt"></i>
-                  </div>
-                  <h3>Kauai County GOP</h3>
-                  <p>Serving the Garden Isle and its Republican community</p>
-                  <a href="https://kauaigop.com" target="_blank" rel="noopener noreferrer" className="show-more">Visit Website</a>
+                <h3>Kauai County GOP</h3>
+                <p>Serving the Garden Isle and its Republican community</p>
+                <a href="https://kauaigop.com" target="_blank" rel="noopener noreferrer" className="show-more">Visit Website</a>
+              </div>
+              {/* West Hawaii County GOP */}
+              <div className="value-card">
+                <div className="value-icon">
+                  <i className="fas fa-map-marker-alt"></i>
                 </div>
-                {/* West Hawaii County GOP */}
-                <div className="value-card">
-                  <div className="value-icon">
-                    <i className="fas fa-map-marker-alt"></i>
-                  </div>
-                  <h3>West Hawaii County GOP</h3>
-                  <p>Representing the western side of the Big Island</p>
-                  <a href="https://westhawaiigop.org" target="_blank" rel="noopener noreferrer" className="show-more">Visit Website</a>
+                <h3>West Hawaii County GOP</h3>
+                <p>Representing the western side of the Big Island</p>
+                <a href="https://westhawaiigop.org" target="_blank" rel="noopener noreferrer" className="show-more">Visit Website</a>
+              </div>
+              {/* East Hawaii County GOP */}
+              <div className="value-card">
+                <div className="value-icon">
+                  <i className="fas fa-map-marker-alt"></i>
                 </div>
-                {/* East Hawaii County GOP */}
-                <div className="value-card">
-                  <div className="value-icon">
-                    <i className="fas fa-map-marker-alt"></i>
-                  </div>
-                  <h3>East Hawaii County GOP</h3>
-                  <p>Serving the eastern side of Hawaii Island</p>
-                  <a href="https://easthawaiigop.org" target="_blank" rel="noopener noreferrer" className="show-more">Visit Website</a>
-                </div>
+                <h3>East Hawaii County GOP</h3>
+                <p>Serving the eastern side of Hawaii Island</p>
+                <a href="https://easthawaiigop.org" target="_blank" rel="noopener noreferrer" className="show-more">Visit Website</a>
               </div>
             </div>
           </div>
         </section>
 
         {/* Coalitions & Auxiliaries */}
-        <section className="coalitions-section">
+        <section className="page-content">
           <div className="container">
-            <div className="main-content">
-              <div className="coalitions-intro">
-                <h2>Coalitions & Auxiliaries</h2>
-                <p>
-                  Specialized organizations working to advance Republican values across Hawaii through targeted outreach and advocacy.
-                </p>
+            <div className="page-intro">
+              <h2>Coalitions & Auxiliaries</h2>
+              <p>
+                Specialized organizations working to advance Republican values across Hawaii through targeted outreach and advocacy.
+              </p>
+            </div>
+            <div className="values-grid coalitions-grid">
+              {/* Oahu League of Republican Women */}
+              <div className="value-card">
+                <div className="value-icon">
+                  <i className="fas fa-users"></i>
+                </div>
+                <h3>Oahu League of Republican Women</h3>
+                <p>Empowering Republican women on Oahu through leadership and advocacy</p>
+                <a href="https://www.olrw.org" target="_blank" rel="noopener noreferrer" className="show-more">Visit Website</a>
               </div>
-              <div className="values-grid coalitions-grid">
-                {/* Oahu League of Republican Women */}
-                <div className="value-card">
-                  <div className="value-icon">
-                    <i className="fas fa-users"></i>
-                  </div>
-                  <h3>Oahu League of Republican Women</h3>
-                  <p>Empowering Republican women on Oahu through leadership and advocacy</p>
-                  <a href="https://www.olrw.org" target="_blank" rel="noopener noreferrer" className="show-more">Visit Website</a>
+              {/* Hawaii Federation of Republican Women */}
+              <div className="value-card">
+                <div className="value-icon">
+                  <i className="fas fa-users"></i>
                 </div>
-                {/* Hawaii Federation of Republican Women */}
-                <div className="value-card">
-                  <div className="value-icon">
-                    <i className="fas fa-users"></i>
-                  </div>
-                  <h3>Hawaii Federation of Republican Women</h3>
-                  <p>Statewide organization promoting Republican women's leadership</p>
-                  <a href="https://www.hfrw.online" target="_blank" rel="noopener noreferrer" className="show-more">Visit Website</a>
+                <h3>Hawaii Federation of Republican Women</h3>
+                <p>Statewide organization promoting Republican women's leadership</p>
+                <a href="https://www.hfrw.online" target="_blank" rel="noopener noreferrer" className="show-more">Visit Website</a>
+              </div>
+              {/* Hawaii Young Republicans */}
+              <div className="value-card">
+                <div className="value-icon">
+                  <i className="fas fa-clock"></i>
                 </div>
-                {/* Hawaii Young Republicans */}
-                <div className="value-card">
-                  <div className="value-icon">
-                    <i className="fas fa-clock"></i>
-                  </div>
-                  <h3>Hawaii Young Republicans</h3>
-                  <p>Engaging young Republicans across the Hawaiian Islands</p>
-                  <a href="https://www.hawaiiyr.com" target="_blank" rel="noopener noreferrer" className="show-more">Visit Website</a>
-                </div>
+                <h3>Hawaii Young Republicans</h3>
+                <p>Engaging young Republicans across the Hawaiian Islands</p>
+                <a href="https://www.hawaiiyr.com" target="_blank" rel="noopener noreferrer" className="show-more">Visit Website</a>
               </div>
             </div>
           </div>
         </section>
 
         {/* County Councils */}
-        <section className="councils-section">
+        <section className="page-content">
           <div className="container">
-            <div className="main-content">
-              <div className="councils-intro">
-                <h2>County Councils</h2>
-                <p>
-                  Local government councils representing Republican values in county governance and policy-making.
-                </p>
+            <div className="page-intro">
+              <h2>County Councils</h2>
+              <p>
+                Local government councils representing Republican values in county governance and policy-making.
+              </p>
+            </div>
+            <div className="values-grid councils-grid">
+              {/* Maui County Council */}
+              <div className="value-card">
+                <div className="value-icon">
+                  <i className="fas fa-building"></i>
+                </div>
+                <h3>Maui County Council</h3>
+                <p>Legislative body for Maui, Molokai, and Lanai counties</p>
+                <a href="https://www.mauicounty.us/councilmembers/" target="_blank" rel="noopener noreferrer" className="show-more">Visit Council</a>
               </div>
-              <div className="values-grid councils-grid">
-                {/* Maui County Council */}
-                <div className="value-card">
-                  <div className="value-icon">
-                    <i className="fas fa-building"></i>
-                  </div>
-                  <h3>Maui County Council</h3>
-                  <p>Legislative body for Maui, Molokai, and Lanai counties</p>
-                  <a href="https://www.mauicounty.us/councilmembers/" target="_blank" rel="noopener noreferrer" className="show-more">Visit Council</a>
+              {/* City & County of Honolulu Council */}
+              <div className="value-card">
+                <div className="value-icon">
+                  <i className="fas fa-building"></i>
                 </div>
-                {/* City & County of Honolulu Council */}
-                <div className="value-card">
-                  <div className="value-icon">
-                    <i className="fas fa-building"></i>
-                  </div>
-                  <h3>City & County of Honolulu Council</h3>
-                  <p>Legislative body for the City and County of Honolulu</p>
-                  <a href="https://www.honolulucitycouncil.org" target="_blank" rel="noopener noreferrer" className="show-more">Visit Council</a>
+                <h3>City & County of Honolulu Council</h3>
+                <p>Legislative body for the City and County of Honolulu</p>
+                <a href="https://www.honolulucitycouncil.org" target="_blank" rel="noopener noreferrer" className="show-more">Visit Council</a>
+              </div>
+              {/* Kauai County Council */}
+              <div className="value-card">
+                <div className="value-icon">
+                  <i className="fas fa-building"></i>
                 </div>
-                {/* Kauai County Council */}
-                <div className="value-card">
-                  <div className="value-icon">
-                    <i className="fas fa-building"></i>
-                  </div>
-                  <h3>Kauai County Council</h3>
-                  <p>Legislative body for Kauai County</p>
-                  <a href="https://www.kauai.gov/Government/Council" target="_blank" rel="noopener noreferrer" className="show-more">Visit Council</a>
+                <h3>Kauai County Council</h3>
+                <p>Legislative body for Kauai County</p>
+                <a href="https://www.kauai.gov/Government/Council" target="_blank" rel="noopener noreferrer" className="show-more">Visit Council</a>
+              </div>
+              {/* County of Hawaii Council */}
+              <div className="value-card">
+                <div className="value-icon">
+                  <i className="fas fa-building"></i>
                 </div>
-                {/* County of Hawaii Council */}
-                <div className="value-card">
-                  <div className="value-icon">
-                    <i className="fas fa-building"></i>
-                  </div>
-                  <h3>County of Hawaii Council</h3>
-                  <p>Legislative body for Hawaii County (Big Island)</p>
-                  <a href="https://www.hawaiicounty.gov/our-county/legislative/county-council/council-members-and-districts" target="_blank" rel="noopener noreferrer" className="show-more">Visit Council</a>
-                </div>
+                <h3>County of Hawaii Council</h3>
+                <p>Legislative body for Hawaii County (Big Island)</p>
+                <a href="https://www.hawaiicounty.gov/our-county/legislative/county-council/council-members-and-districts" target="_blank" rel="noopener noreferrer" className="show-more">Visit Council</a>
               </div>
             </div>
           </div>

@@ -30,9 +30,9 @@ export default function About() {
         </section>
 
         {/* Main Content */}
-        <section className="about-content">
+        <section className="page-content">
           <div className="container">
-            <div className="main-content philosophy-row philosophy-row--force-right">
+            <div className="philosophy-row philosophy-row--force-right">
               <div className="philosophy-text">
                 <h2>Our Philosophy</h2>
                 <p>
@@ -54,7 +54,7 @@ export default function About() {
                 </div>
               </div>
             </div>
-            <div className="main-content commitment-row">
+            <div className="commitment-row">
               <div className="commitment-text">
                 <h2>Our Commitment</h2>
                 <p>
@@ -200,66 +200,87 @@ export default function About() {
                 <p>The unalienable right of the people to defend themselves, their family, and their property.</p>
               </div>
               <div className="principle-item no-bg">
-                <i className="fas fa-chart-line"></i>
-                <p>A free enterprise society unencumbered by government interference or subsidies.</p>
+                <i className="fas fa-balance-scale"></i>
+                <p>Equal justice under the law for all citizens, regardless of race, creed, color, national origin, age, or gender.</p>
               </div>
               <div className="principle-item no-bg">
-                <i className="fas fa-medal"></i>
-                <p>Honoring all those who serve and protect freedoms.</p>
+                <i className="fas fa-hand-holding-usd"></i>
+                <p>Private property rights and the free enterprise system as the foundation of economic prosperity.</p>
               </div>
               <div className="principle-item no-bg">
-                <i className="fas fa-user-shield"></i>
-                <p>Individual liberty and the right to privacy.</p>
+                <i className="fas fa-leaf"></i>
+                <p>Responsible stewardship of our natural resources and environment.</p>
               </div>
               <div className="principle-item no-bg">
-                <i className="fas fa-handshake"></i>
-                <p>We champion personal integrity, honor, and ethical behavior.</p>
+                <i className="fas fa-globe"></i>
+                <p>Strong national defense and a foreign policy that promotes peace through strength.</p>
               </div>
             </div>
           </div>
         </section>
 
-        {/* Platform Downloads */}
+        {/* Platform Section */}
         <section className="platform-section">
           <div className="container">
-            <h2>Platform & Resolutions 2024</h2>
+            <h2>Our Platform</h2>
             <div className="download-grid">
-              <div className="download-card no-bg">
+              <a 
+                href="/documents/2024-HRP-Platform-Convention-Updates.pdf" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="download-card"
+              >
+                <div className="download-bg">
+                  <div className="download-bg-image"></div>
+                  <div className="download-overlay"></div>
+                </div>
                 <div className="download-content">
                   <div className="download-icon">
                     <i className="fas fa-file-pdf"></i>
                   </div>
-                  <h3>Final 2024 HRP Platform including Convention Updates</h3>
-                  <p>Download the complete platform document with all convention updates and amendments.</p>
-                  <a 
-                    href="https://img1.wsimg.com/blobby/go/8f677aa9-d19c-4e60-8b09-ecacc73b5705/downloads/Final%202024%20HRP%20Platform%20including%20Convention%20U.pdf?ver=1748549156736"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="download-btn"
-                  >
-                    <i className="fas fa-download"></i>
-                    DOWNLOAD
-                  </a>
+                  <h3>2024 HRP Platform</h3>
+                  <p>Complete platform document with all convention updates and amendments.</p>
+                  <div className="download-btn">Download PDF →</div>
                 </div>
-              </div>
-              <div className="download-card no-bg">
+              </a>
+              <a 
+                href="/documents/Hawaii-Republican-Party-Bylaws-May-2024.pdf" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="download-card"
+              >
+                <div className="download-bg">
+                  <div className="download-bg-image"></div>
+                  <div className="download-overlay"></div>
+                </div>
                 <div className="download-content">
                   <div className="download-icon">
                     <i className="fas fa-file-pdf"></i>
                   </div>
-                  <h3>Final Issue Resolutions approved at HRP Convention 2024</h3>
-                  <p>Access all resolutions and policy positions approved during the 2024 convention.</p>
-                  <a 
-                    href="https://img1.wsimg.com/blobby/go/8f677aa9-d19c-4e60-8b09-ecacc73b5705/downloads/Final%20Issue%20Resolutions%20approved%20at%20HRP%20Conven.pdf?ver=1748549156736"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="download-btn"
-                  >
-                    <i className="fas fa-download"></i>
-                    DOWNLOAD
-                  </a>
+                  <h3>HRP Bylaws</h3>
+                  <p>Official party bylaws and organizational structure.</p>
+                  <div className="download-btn">Download PDF →</div>
                 </div>
-              </div>
+              </a>
+              <a 
+                href="/documents/Red-vs-Blue-Guide.pdf" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="download-card"
+              >
+                <div className="download-bg">
+                  <div className="download-bg-image"></div>
+                  <div className="download-overlay"></div>
+                </div>
+                <div className="download-content">
+                  <div className="download-icon">
+                    <i className="fas fa-file-pdf"></i>
+                  </div>
+                  <h3>Red vs Blue Guide</h3>
+                  <p>Comprehensive guide to Republican vs Democratic principles.</p>
+                  <div className="download-btn">Download PDF →</div>
+                </div>
+              </a>
             </div>
           </div>
         </section>

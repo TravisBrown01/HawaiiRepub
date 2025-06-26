@@ -73,9 +73,14 @@ export default function LeadershipPage() {
             <p className="subtitle">Meet the State Leadership of the Hawaii Republican Party</p>
           </div>
         </section>
-        <section className="leadership-section">
+        <section className="page-content">
           <div className="container">
-            <h2 className="leadership-title">State Leadership</h2>
+            <div className="page-intro">
+              <h2>State Leadership</h2>
+              <p>
+                Meet the dedicated leaders of the Hawaii Republican Party who are working to advance Republican values and principles across the Hawaiian Islands.
+              </p>
+            </div>
             <div className="leadership-grid">
               {stateLeaders.map((leader) => (
                 <div className="leader-card" key={leader.name}>
