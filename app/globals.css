@@ -140,6 +140,90 @@ body {
   opacity: 1;
 }
 
+/* Dropdown Navigation */
+.nav-dropdown {
+  position: relative;
+}
+
+.nav-dropdown-btn {
+  background: none;
+  border: none;
+  color: var(--gop-text);
+  font-weight: 500;
+  font-family: 'Montserrat', Arial, sans-serif;
+  font-size: 1.1rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  opacity: 0.85;
+  transition: color 0.2s;
+  padding: 0;
+}
+
+.nav-dropdown-btn:hover {
+  color: var(--gop-red);
+  opacity: 1;
+}
+
+.nav-dropdown-btn i {
+  font-size: 0.8rem;
+  transition: transform 0.2s ease;
+}
+
+.nav-dropdown-btn i.rotate {
+  transform: rotate(180deg);
+}
+
+.nav-dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background: var(--gop-gray-card);
+  border: 1px solid var(--gop-gray-border);
+  border-radius: 8px;
+  box-shadow: var(--gop-shadow);
+  min-width: 200px;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition: all 0.2s ease;
+  z-index: 1000;
+  margin-top: 0.5rem;
+}
+
+.nav-dropdown-menu.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.nav-dropdown-menu a {
+  display: block;
+  padding: 0.75rem 1rem;
+  color: var(--gop-text);
+  text-decoration: none;
+  font-weight: 500;
+  font-family: 'Montserrat', Arial, sans-serif;
+  font-size: 1rem;
+  transition: background-color 0.2s, color 0.2s;
+  border-radius: 0;
+  opacity: 1;
+}
+
+.nav-dropdown-menu a:first-child {
+  border-radius: 8px 8px 0 0;
+}
+
+.nav-dropdown-menu a:last-child {
+  border-radius: 0 0 8px 8px;
+}
+
+.nav-dropdown-menu a:hover {
+  background-color: var(--gop-red-light);
+  color: var(--gop-red);
+}
+
 /* Mobile Overlay */
 .mobile-overlay {
   display: none;
@@ -213,6 +297,52 @@ body {
   /* Prevent body scroll when menu is open */
   body.menu-open {
     overflow: hidden;
+  }
+  
+  /* Mobile Dropdown Styles */
+  .nav-dropdown {
+    width: 100%;
+  }
+  
+  .nav-dropdown-btn {
+    width: 100%;
+    justify-content: space-between;
+    font-size: 1.2rem;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--gop-gray-border);
+    margin: 0;
+  }
+  
+  .nav-dropdown-menu {
+    position: static;
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+    box-shadow: none;
+    border: none;
+    background: transparent;
+    margin-top: 0;
+    width: 100%;
+    min-width: auto;
+  }
+  
+  .nav-dropdown-menu a {
+    padding-left: 2rem;
+    font-size: 1.1rem;
+    border-bottom: 1px solid var(--gop-gray-border);
+  }
+  
+  .nav-dropdown-menu a:first-child {
+    border-radius: 0;
+  }
+  
+  .nav-dropdown-menu a:last-child {
+    border-radius: 0;
+  }
+  
+  .nav-dropdown-menu a:hover {
+    background-color: transparent;
+    color: var(--gop-red);
   }
 }
 
@@ -6506,4 +6636,121 @@ footer .socials a:hover {
 
 .form-cta, .resource-cta, .action-btn, .resource-link, .download-btn, .county-btn, .coalition-btn, .council-btn {
   border-radius: 12px !important;
+}
+
+.leadership-section {
+  background: #f5f5f7;
+  padding: 4rem 0 5rem 0;
+}
+
+.leadership-title {
+  font-family: 'Montserrat', Arial, sans-serif;
+  font-size: 2.5rem;
+  color: var(--gop-red);
+  text-align: center;
+  margin-bottom: 2.5rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.leadership-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 2.5rem;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.leader-card {
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 6px 24px rgba(0,0,0,0.08);
+  padding: 2.5rem 1.5rem 2rem 1.5rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: box-shadow 0.2s, transform 0.2s;
+  border: 1px solid #ececec;
+}
+
+.leader-card:hover {
+  box-shadow: 0 12px 36px rgba(198,40,40,0.13);
+  transform: translateY(-4px) scale(1.02);
+}
+
+.leader-photo-wrapper {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  overflow: hidden;
+  box-shadow: 0 2px 12px rgba(198,40,40,0.10);
+  margin-bottom: 1.25rem;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.leader-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.leader-name {
+  font-family: 'Montserrat', Arial, sans-serif;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1d1d1f;
+  margin-bottom: 0.5rem;
+  letter-spacing: -0.01em;
+}
+
+.leader-title {
+  font-family: 'SF Pro Text', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 1.05rem;
+  color: #86868b;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+.leader-email {
+  color: var(--gop-red);
+  font-size: 1rem;
+  text-decoration: none;
+  font-weight: 600;
+  margin-top: 0.5rem;
+  transition: color 0.2s;
+}
+
+.leader-email:hover {
+  color: #a91d1d;
+  text-decoration: underline;
+}
+
+@media (max-width: 700px) {
+  .leadership-section {
+    padding: 2.5rem 0 3rem 0;
+  }
+  .leadership-title {
+    font-size: 2rem;
+  }
+  .leadership-grid {
+    gap: 1.25rem;
+  }
+  .leader-card {
+    padding: 1.5rem 0.75rem 1.25rem 0.75rem;
+  }
+  .leader-photo-wrapper {
+    width: 90px;
+    height: 90px;
+  }
+  .leader-name {
+    font-size: 1.1rem;
+  }
+  .leader-title {
+    font-size: 0.98rem;
+  }
 }

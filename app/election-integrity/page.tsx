@@ -62,7 +62,7 @@ export default function ElectionIntegrity() {
                   <h3>Become a Poll Watcher</h3>
                   <p>Help monitor elections and ensure transparency at polling places.</p>
                   <a 
-                    href="https://elections.hawaii.gov/volunteer/" 
+                    href="https://elections.hawaii.gov/voting/volunteer/" 
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="election-action-btn"
@@ -75,7 +75,7 @@ export default function ElectionIntegrity() {
                   <div className="action-icon">
                     <i className="fas fa-book"></i>
                   </div>
-                  <h3>Get Educated</h3>
+                  <h3>Election Education</h3>
                   <p>Learn about election processes and your rights as a voter.</p>
                   <a 
                     href="/election-education" 

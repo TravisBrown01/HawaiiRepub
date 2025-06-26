@@ -378,7 +378,7 @@ export default function ElectionEducation() {
                   </a>
 
                   <a 
-                    href="https://elections.hawaii.gov/volunteer/" 
+                    href="https://elections.hawaii.gov/voting/volunteer/" 
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="resource-card"
@@ -389,6 +389,18 @@ export default function ElectionEducation() {
                     <h3>Poll Worker Application</h3>
                     <p>Help ensure fair elections by becoming a poll worker.</p>
                     <div className="resource-cta">Apply Now →</div>
+                  </a>
+
+                  <a 
+                    href="/election-integrity" 
+                    className="resource-card"
+                  >
+                    <div className="resource-icon">
+                      <i className="fas fa-shield-alt"></i>
+                    </div>
+                    <h3>Election Integrity</h3>
+                    <p>Learn about election security and how to report concerns.</p>
+                    <div className="resource-cta">Learn More →</div>
                   </a>
 
                   <a 
@@ -407,97 +419,6 @@ export default function ElectionEducation() {
 
               {/* Quick Actions Grid */}
               <div className="election-actions-grid">
-                <div className="election-action-card">
-                  <div className="action-icon">
-                    <i className="fas fa-address-card"></i>
-                  </div>
-                  <h3>Register to Vote</h3>
-                  <p>Make sure you're registered to vote in Hawaii elections.</p>
-                  <a 
-                    href="https://olvr.hawaii.gov" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="election-action-btn"
-                  >
-                    Register Now
-                  </a>
-                </div>
-
-                <div className="election-action-card">
-                  <div className="action-icon">
-                    <i className="fas fa-map-marker-alt"></i>
-                  </div>
-                  <h3>Where to Vote</h3>
-                  <p>Find your nearest polling place and ballot drop box locations.</p>
-                  <a 
-                    href="https://elections.hawaii.gov/voter-service-centers-and-places-of-deposit/" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="election-action-btn"
-                  >
-                    Find Locations
-                  </a>
-                </div>
-
-                <div className="election-action-card">
-                  <div className="action-icon">
-                    <i className="fas fa-search"></i>
-                  </div>
-                  <h3>Track Your Ballot</h3>
-                  <p>Track the status of your mail-in ballot and ensure it's counted.</p>
-                  <a 
-                    href="https://ballotstatus.hawaii.gov" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="election-action-btn"
-                  >
-                    Track Ballot
-                  </a>
-                </div>
-
-                <div className="election-action-card">
-                  <div className="action-icon">
-                    <i className="fas fa-user-check"></i>
-                  </div>
-                  <h3>Apply as Poll Worker</h3>
-                  <p>Help ensure fair elections by becoming a poll worker.</p>
-                  <a 
-                    href="https://elections.hawaii.gov/volunteer/" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="election-action-btn"
-                  >
-                    Apply Now
-                  </a>
-                </div>
-
-                <div className="election-action-card">
-                  <div className="action-icon">
-                    <i className="fas fa-flag"></i>
-                  </div>
-                  <h3>Report Issues</h3>
-                  <p>Report election integrity concerns or suspicious activities.</p>
-                  <a 
-                    href="#report-form" 
-                    className="election-action-btn"
-                  >
-                    Report Issue
-                  </a>
-                </div>
-
-                <div className="election-action-card">
-                  <div className="action-icon">
-                    <i className="fas fa-graduation-cap"></i>
-                  </div>
-                  <h3>Election Education</h3>
-                  <p>Learn about election processes and your rights as a voter.</p>
-                  <a 
-                    href="/election-education" 
-                    className="election-action-btn"
-                  >
-                    Learn More
-                  </a>
-                </div>
               </div>
 
               {/* Education Section */}

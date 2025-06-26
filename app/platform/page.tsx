@@ -20,8 +20,8 @@ export default function ResourcesPage() {
                 priority
               />
             </div>
-            <h1>Party Resources</h1>
-            <p className="subtitle">Tools, Platform, Bylaws & Forms for Hawaii Republicans</p>
+            <h1>Party Platform</h1>
+            <p className="subtitle">Official Party Platform, Bylaws & Resources for Hawaii Republicans</p>
           </div>
         </section>
 
