@@ -58,7 +58,7 @@ export default function Header() {
 
       {/* Navigation */}
       <nav className={`nav ${isMenuOpen ? 'nav-open' : ''}`}>
-        <Link href="/about" onClick={() => setIsMenuOpen(false)}>About</Link>
+        <Link href="/" onClick={() => setIsMenuOpen(false)}>Home</Link>
         
         <div className="nav-dropdown">
           <button 
@@ -98,6 +98,7 @@ export default function Header() {
           </div>
         </div>
         
+        <Link href="/about" onClick={() => setIsMenuOpen(false)}>About</Link>
         <Link href="https://secure.winred.com/hawaiigop/storefront/" target="_blank" rel="noopener noreferrer" onClick={() => setIsMenuOpen(false)}>Store</Link>
         <Link href="https://secure.winred.com/hawaiigop/" target="_blank" rel="noopener noreferrer" onClick={() => setIsMenuOpen(false)}>Donate</Link>
       </nav>
