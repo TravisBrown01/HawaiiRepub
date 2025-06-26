@@ -262,25 +262,6 @@ export default function About() {
                   <div className="download-btn">Download PDF →</div>
                 </div>
               </a>
-              <a 
-                href="/documents/Red-vs-Blue-Guide.pdf" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="download-card"
-              >
-                <div className="download-bg">
-                  <div className="download-bg-image"></div>
-                  <div className="download-overlay"></div>
-                </div>
-                <div className="download-content">
-                  <div className="download-icon">
-                    <i className="fas fa-file-pdf"></i>
-                  </div>
-                  <h3>Red vs Blue Guide</h3>
-                  <p>Comprehensive guide to Republican vs Democratic principles.</p>
-                  <div className="download-btn">Download PDF →</div>
-                </div>
-              </a>
             </div>
           </div>
         </section>
