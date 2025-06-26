@@ -3369,22 +3369,36 @@ footer .socials a:hover {
 }
 
 .resource-cta {
-  display: inline-block;
   background: var(--gop-red);
-  color: white;
-  padding: 0.75rem 1.5rem;
-  border-radius: 25px;
+  color: #fff;
+  border: none;
+  padding: 0.75rem 1.25rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
   font-weight: 600;
-  font-size: 0.9rem;
-  margin-top: 1rem;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(198,40,40,0.3);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: 'SF Pro Text', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  letter-spacing: 0.01em;
+  width: 100%;
+  line-height: 1;
+  margin-top: auto;
 }
 
-.resource-card:hover .resource-cta {
+.resource-cta i {
+  color: #fff;
+  font-size: 0.85rem;
+}
+
+.resource-cta:hover {
   background: #a91d1d;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(198,40,40,0.4);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(198,40,40,0.25);
 }
 
 /* Mobile Responsiveness */
@@ -4319,7 +4333,11 @@ footer .socials a:hover {
 }
 
 .form-cta {
-  display: inline-block;
+  margin-top: auto;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   background: var(--gop-red);
   color: white;
   padding: 0.75rem 1.5rem;
@@ -5805,4 +5823,687 @@ footer .socials a:hover {
   .college-students-page .contact-card h3 {
     font-size: 1.25rem;
   }
+}
+
+/* Resources Page - Matching About Page Platform Section */
+.resources-page {
+  min-height: 100vh;
+}
+
+.resources-hero {
+  background: linear-gradient(135deg, var(--gop-red) 0%, #a91d1d 100%);
+  padding: 6rem 0;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.resources-hero .container {
+  position: relative;
+  z-index: 3;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.resources-hero-logo {
+  margin-bottom: 2rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #fff;
+  border-radius: 50%;
+  box-shadow: 0 4px 32px rgba(198,40,40,0.08);
+  padding: 1rem;
+  width: 140px;
+  height: 140px;
+  margin: 0 auto 2rem auto;
+}
+
+.resources-hero-logo img {
+  width: 100px;
+  height: 100px;
+  object-fit: contain;
+}
+
+.resources-hero h1 {
+  font-family: 'Montserrat', Arial, sans-serif;
+  font-size: 4.5rem;
+  color: #fff;
+  margin-bottom: 1rem;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+.resources-hero .subtitle {
+  font-size: 1.5rem;
+  color: rgba(255,255,255,0.9);
+  max-width: 600px;
+  margin: 0 auto;
+  line-height: 1.4;
+}
+
+.resources-content {
+  padding: 4rem 0;
+}
+
+.resources-content .container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.resources-intro {
+  text-align: center;
+  margin-bottom: 4rem;
+}
+
+.resources-intro h2 {
+  font-family: 'Montserrat', Arial, sans-serif;
+  font-size: 3rem;
+  color: var(--gop-red);
+  margin-bottom: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.resources-intro p {
+  font-size: 1.2rem;
+  color: var(--gop-text-light);
+  max-width: 800px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+.resources-section {
+  margin-bottom: 4rem;
+}
+
+.resources-section h2 {
+  font-family: 'Montserrat', Arial, sans-serif;
+  font-size: 2.5rem;
+  color: var(--gop-red);
+  text-align: center;
+  margin-bottom: 2rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.resources-section > p {
+  font-size: 1.1rem;
+  color: var(--gop-text-light);
+  text-align: center;
+  max-width: 700px;
+  margin: 0 auto 3rem auto;
+  line-height: 1.6;
+}
+
+.resources-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.resource-card {
+  background: var(--gop-gray-bg);
+  border-radius: 16px;
+  padding: 2rem;
+  text-align: center;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  border: 1px solid var(--gop-gray-border);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  min-height: 280px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.resource-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 30px rgba(198,40,40,0.15);
+}
+
+.resource-icon {
+  margin-bottom: 1.5rem;
+}
+
+.resource-icon i {
+  font-size: 3rem;
+  color: var(--gop-red);
+  transition: transform 0.3s ease;
+}
+
+.resource-card:hover .resource-icon i {
+  transform: scale(1.1);
+}
+
+.resource-card h3 {
+  font-family: 'Montserrat', Arial, sans-serif;
+  font-size: 1.3rem;
+  color: var(--gop-text);
+  margin-bottom: 1rem;
+  font-weight: 700;
+  line-height: 1.4;
+  letter-spacing: -0.01em;
+}
+
+.resource-card p {
+  font-size: 0.95rem;
+  color: var(--gop-text-light);
+  margin-bottom: 1.5rem;
+  line-height: 1.5;
+  flex-grow: 1;
+}
+
+.resource-cta {
+  background: var(--gop-red);
+  color: #fff;
+  border: none;
+  padding: 0.8rem 1.8rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: 'Montserrat', Arial, sans-serif;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  letter-spacing: 0.01em;
+  align-self: center;
+}
+
+.resource-cta:hover {
+  background: #a91d1d;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(198,40,40,0.3);
+}
+
+.contact-section {
+  background: var(--gop-gray-card);
+  padding: 4rem 0;
+  border-top: 1px solid var(--gop-gray-border);
+}
+
+.contact-section h2 {
+  font-family: 'Montserrat', Arial, sans-serif;
+  font-size: 2.5rem;
+  color: var(--gop-red);
+  text-align: center;
+  margin-bottom: 2rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.contact-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.contact-card {
+  background: var(--gop-gray-bg);
+  border-radius: 16px;
+  padding: 2rem;
+  text-align: center;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  border: 1px solid var(--gop-gray-border);
+  transition: all 0.3s ease;
+}
+
+.contact-card h3 {
+  font-family: 'Montserrat', Arial, sans-serif;
+  font-size: 1.3rem;
+  color: var(--gop-text);
+  margin-bottom: 1rem;
+  font-weight: 700;
+}
+
+.contact-card p {
+  font-size: 1rem;
+  color: var(--gop-text-light);
+  margin-bottom: 1rem;
+  line-height: 1.5;
+}
+
+.contact-card a {
+  color: var(--gop-red);
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.3s ease;
+}
+
+.contact-card a:hover {
+  color: #a91d1d;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .resources-hero h1 {
+    font-size: 3.5rem;
+  }
+  
+  .resources-hero .subtitle {
+    font-size: 1.3rem;
+  }
+  
+  .resources-intro h2,
+  .resources-section h2 {
+    font-size: 2.5rem;
+  }
+  
+  .resources-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  
+  .resource-card {
+    padding: 1.5rem;
+    min-height: 250px;
+  }
+  
+  .contact-section {
+    padding: 3rem 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .resources-hero {
+    padding: 4rem 0;
+  }
+  
+  .resources-hero h1 {
+    font-size: 2.8rem;
+  }
+  
+  .resources-hero .subtitle {
+    font-size: 1.1rem;
+  }
+  
+  .resources-content {
+    padding: 3rem 0;
+  }
+  
+  .resources-intro h2,
+  .resources-section h2 {
+    font-size: 2rem;
+  }
+  
+  .resource-card {
+    padding: 1.25rem;
+    min-height: 220px;
+  }
+  
+  .resource-card h3 {
+    font-size: 1.2rem;
+  }
+  
+  .contact-section {
+    padding: 2rem 0;
+  }
+}
+
+/* Resources Page - Apple Design Principles */
+.resources-page {
+  min-height: 100vh;
+  background: #f5f5f7;
+}
+
+.resources-hero {
+  background: linear-gradient(135deg, var(--gop-red) 0%, #a91d1d 100%);
+  padding: 5rem 0 4rem 0;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.resources-hero .container {
+  position: relative;
+  z-index: 3;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.resources-hero-logo {
+  margin-bottom: 2rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #fff;
+  border-radius: 50%;
+  box-shadow: 0 4px 32px rgba(198,40,40,0.08);
+  padding: 1rem;
+  width: 120px;
+  height: 120px;
+  margin: 0 auto 2rem auto;
+}
+
+.resources-hero-logo img {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+}
+
+.resources-hero h1 {
+  font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 3.5rem;
+  color: #fff;
+  margin-bottom: 1rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+.resources-hero .subtitle {
+  font-family: 'SF Pro Text', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 1.25rem;
+  color: rgba(255,255,255,0.9);
+  max-width: 600px;
+  margin: 0 auto;
+  line-height: 1.4;
+  font-weight: 400;
+}
+
+.resources-content {
+  padding: 4rem 0;
+  background: #f5f5f7;
+}
+
+.resources-content .container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.resources-intro {
+  text-align: center;
+  margin-bottom: 4rem;
+}
+
+.resources-intro h2 {
+  font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 2.5rem;
+  color: #1d1d1f;
+  margin-bottom: 1rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.resources-intro p {
+  font-family: 'SF Pro Text', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 1.1rem;
+  color: #86868b;
+  max-width: 700px;
+  margin: 0 auto;
+  line-height: 1.5;
+  font-weight: 400;
+}
+
+.resources-section {
+  margin-bottom: 4rem;
+}
+
+.resources-section h2 {
+  font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 2rem;
+  color: #1d1d1f;
+  text-align: center;
+  margin-bottom: 1rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.resources-section > p {
+  font-family: 'SF Pro Text', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 1rem;
+  color: #86868b;
+  text-align: center;
+  max-width: 600px;
+  margin: 0 auto 2.5rem auto;
+  line-height: 1.5;
+  font-weight: 400;
+}
+
+.resources-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 1.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.resource-card {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  border: 1px solid #e5e5e7;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.resource-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+  border-color: #d2d2d7;
+}
+
+.resource-card h3 {
+  font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 1.1rem;
+  color: #1d1d1f;
+  margin-bottom: 0.75rem;
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+}
+
+.resource-card p {
+  font-family: 'SF Pro Text', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 0.9rem;
+  color: #86868b;
+  margin-bottom: 1.25rem;
+  line-height: 1.4;
+  flex-grow: 1;
+  font-weight: 400;
+}
+
+.resource-cta {
+  background: var(--gop-red);
+  color: #fff;
+  border: none;
+  padding: 0.75rem 1.25rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: 'SF Pro Text', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  letter-spacing: 0.01em;
+  width: 100%;
+  line-height: 1;
+  margin-top: auto;
+}
+
+.resource-cta i {
+  color: #fff;
+  font-size: 0.85rem;
+}
+
+.resource-cta:hover {
+  background: #a91d1d;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(198,40,40,0.25);
+}
+
+.contact-section {
+  background: #ffffff;
+  padding: 4rem 0;
+  border-top: 1px solid #e5e5e7;
+}
+
+.contact-section h2 {
+  font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 2rem;
+  color: #1d1d1f;
+  text-align: center;
+  margin-bottom: 1.5rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.contact-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.contact-card {
+  background: #f5f5f7;
+  border-radius: 12px;
+  padding: 1.5rem;
+  text-align: left;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  border: 1px solid #e5e5e7;
+  transition: all 0.3s ease;
+}
+
+.contact-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+}
+
+.contact-card h3 {
+  font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 1.1rem;
+  color: #1d1d1f;
+  margin-bottom: 0.75rem;
+  font-weight: 600;
+}
+
+.contact-card p {
+  font-family: 'SF Pro Text', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 0.9rem;
+  color: #86868b;
+  margin-bottom: 0.75rem;
+  line-height: 1.4;
+  font-weight: 400;
+}
+
+.contact-card a {
+  color: var(--gop-red);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s ease;
+  font-family: 'SF Pro Text', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.contact-card a:hover {
+  color: #a91d1d;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .resources-hero h1 {
+    font-size: 2.5rem;
+  }
+  
+  .resources-hero .subtitle {
+    font-size: 1.1rem;
+  }
+  
+  .resources-intro h2,
+  .resources-section h2 {
+    font-size: 2rem;
+  }
+  
+  .resources-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .resource-card {
+    padding: 1.25rem;
+    min-height: 180px;
+  }
+  
+  .contact-section {
+    padding: 3rem 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .resources-hero {
+    padding: 3rem 0 2rem 0;
+  }
+  
+  .resources-hero h1 {
+    font-size: 2rem;
+  }
+  
+  .resources-hero .subtitle {
+    font-size: 1rem;
+  }
+  
+  .resources-content {
+    padding: 3rem 0;
+  }
+  
+  .resources-intro h2,
+  .resources-section h2 {
+    font-size: 1.75rem;
+  }
+  
+  .resource-card {
+    padding: 1rem;
+    min-height: 160px;
+  }
+  
+  .resource-card h3 {
+    font-size: 1rem;
+  }
+  
+  .contact-section {
+    padding: 2rem 0;
+  }
+}
+
+.form-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  justify-content: flex-start;
+}
+
+.form-cta {
+  margin-top: auto;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.form-cta, .resource-cta, .action-btn, .resource-link, .download-btn, .county-btn, .coalition-btn, .council-btn {
+  border-radius: 12px !important;
 }

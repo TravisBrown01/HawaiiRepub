@@ -42,9 +42,9 @@ export default function CountiesPage() {
                   <div className="value-icon">
                     <i className="fas fa-map-marker-alt"></i>
                   </div>
-                  <h3>Honolulu County GOP</h3>
+                  <h3>Honolulu County Committee</h3>
                   <p>Serving the City and County of Honolulu, the most populous county in Hawaii</p>
-                  <a href="#" className="show-more">Visit Website</a>
+                  <a href="https://oahugop.com" target="_blank" rel="noopener noreferrer" className="show-more">Visit Website</a>
                 </div>
                 {/* Maui County GOP */}
                 <div className="value-card">
@@ -53,7 +53,7 @@ export default function CountiesPage() {
                   </div>
                   <h3>Maui County GOP</h3>
                   <p>Representing the islands of Maui, Molokai, and Lanai</p>
-                  <a href="#" className="show-more">Visit Website</a>
+                  <a href="https://mauicountygop.com" target="_blank" rel="noopener noreferrer" className="show-more">Visit Website</a>
                 </div>
                 {/* Kauai County GOP */}
                 <div className="value-card">
@@ -62,7 +62,7 @@ export default function CountiesPage() {
                   </div>
                   <h3>Kauai County GOP</h3>
                   <p>Serving the Garden Isle and its Republican community</p>
-                  <a href="#" className="show-more">Visit Website</a>
+                  <a href="https://kauaigop.com" target="_blank" rel="noopener noreferrer" className="show-more">Visit Website</a>
                 </div>
                 {/* West Hawaii County GOP */}
                 <div className="value-card">
@@ -71,7 +71,7 @@ export default function CountiesPage() {
                   </div>
                   <h3>West Hawaii County GOP</h3>
                   <p>Representing the western side of the Big Island</p>
-                  <a href="#" className="show-more">Visit Website</a>
+                  <a href="https://westhawaiigop.org" target="_blank" rel="noopener noreferrer" className="show-more">Visit Website</a>
                 </div>
                 {/* East Hawaii County GOP */}
                 <div className="value-card">
@@ -80,7 +80,7 @@ export default function CountiesPage() {
                   </div>
                   <h3>East Hawaii County GOP</h3>
                   <p>Serving the eastern side of Hawaii Island</p>
-                  <a href="#" className="show-more">Visit Website</a>
+                  <a href="https://easthawaiigop.org" target="_blank" rel="noopener noreferrer" className="show-more">Visit Website</a>
                 </div>
               </div>
             </div>
@@ -105,7 +105,7 @@ export default function CountiesPage() {
                   </div>
                   <h3>Oahu League of Republican Women</h3>
                   <p>Empowering Republican women on Oahu through leadership and advocacy</p>
-                  <a href="#" className="show-more">Learn More</a>
+                  <a href="https://www.olrw.org" target="_blank" rel="noopener noreferrer" className="show-more">Visit Website</a>
                 </div>
                 {/* Hawaii Federation of Republican Women */}
                 <div className="value-card">
@@ -114,7 +114,7 @@ export default function CountiesPage() {
                   </div>
                   <h3>Hawaii Federation of Republican Women</h3>
                   <p>Statewide organization promoting Republican women's leadership</p>
-                  <a href="#" className="show-more">Learn More</a>
+                  <a href="https://www.hfrw.online" target="_blank" rel="noopener noreferrer" className="show-more">Visit Website</a>
                 </div>
                 {/* Hawaii Young Republicans */}
                 <div className="value-card">
@@ -123,7 +123,7 @@ export default function CountiesPage() {
                   </div>
                   <h3>Hawaii Young Republicans</h3>
                   <p>Engaging young Republicans across the Hawaiian Islands</p>
-                  <a href="#" className="show-more">Learn More</a>
+                  <a href="https://www.hawaiiyr.com" target="_blank" rel="noopener noreferrer" className="show-more">Visit Website</a>
                 </div>
               </div>
             </div>
@@ -148,7 +148,7 @@ export default function CountiesPage() {
                   </div>
                   <h3>Maui County Council</h3>
                   <p>Legislative body for Maui, Molokai, and Lanai counties</p>
-                  <a href="#" className="show-more">Visit Council</a>
+                  <a href="https://www.mauicounty.us/councilmembers/" target="_blank" rel="noopener noreferrer" className="show-more">Visit Council</a>
                 </div>
                 {/* City & County of Honolulu Council */}
                 <div className="value-card">
@@ -157,7 +157,7 @@ export default function CountiesPage() {
                   </div>
                   <h3>City & County of Honolulu Council</h3>
                   <p>Legislative body for the City and County of Honolulu</p>
-                  <a href="#" className="show-more">Visit Council</a>
+                  <a href="https://www.honolulucitycouncil.org" target="_blank" rel="noopener noreferrer" className="show-more">Visit Council</a>
                 </div>
                 {/* Kauai County Council */}
                 <div className="value-card">
@@ -166,7 +166,7 @@ export default function CountiesPage() {
                   </div>
                   <h3>Kauai County Council</h3>
                   <p>Legislative body for Kauai County</p>
-                  <a href="#" className="show-more">Visit Council</a>
+                  <a href="https://www.kauai.gov/Government/Council" target="_blank" rel="noopener noreferrer" className="show-more">Visit Council</a>
                 </div>
                 {/* County of Hawaii Council */}
                 <div className="value-card">
@@ -175,7 +175,7 @@ export default function CountiesPage() {
                   </div>
                   <h3>County of Hawaii Council</h3>
                   <p>Legislative body for Hawaii County (Big Island)</p>
-                  <a href="#" className="show-more">Visit Council</a>
+                  <a href="https://www.hawaiicounty.gov/our-county/legislative/county-council/council-members-and-districts" target="_blank" rel="noopener noreferrer" className="show-more">Visit Council</a>
                 </div>
               </div>
             </div>

@@ -96,7 +96,7 @@ export default function VotersWithFelonyConvictions() {
                   </a>
 
                   <a 
-                    href="https://www.capitol.hawaii.gov/hrscurrent/Vol14_Ch0801-0899/HRS0831/HRS_0831-0002.htm" 
+                    href="https://data.capitol.hawaii.gov/hrscurrent/Vol14_Ch0701-0853/HRS0831/HRS_0831-0002.htm" 
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="form-card"
@@ -199,6 +199,7 @@ export default function VotersWithFelonyConvictions() {
                     </div>
                     <h3>Get Help</h3>
                     <p>If you're unsure about your eligibility, contact the Hawaii Office of Elections for guidance.</p>
+                    <a href="tel:8084538683" className="form-cta">Call (808) 453-8683 →</a>
                   </div>
                 </div>
               </div>
@@ -229,12 +230,6 @@ export default function VotersWithFelonyConvictions() {
               <div className="contact-section">
                 <h2>Additional Resources</h2>
                 <div className="contact-grid">
-                  <div className="contact-card">
-                    <h3>Legal Assistance</h3>
-                    <p><strong>Hawaii State Bar Association:</strong> <a href="https://www.hsba.org" target="_blank" rel="noopener noreferrer">hsba.org</a></p>
-                    <p><strong>Legal Aid Society of Hawaii:</strong> <a href="https://www.legalaidhawaii.org" target="_blank" rel="noopener noreferrer">legalaidhawaii.org</a></p>
-                  </div>
-
                   <div className="contact-card">
                     <h3>Voter Registration</h3>
                     <p><strong>Online Registration:</strong> <a href="https://olvr.hawaii.gov" target="_blank" rel="noopener noreferrer">olvr.hawaii.gov</a></p>
