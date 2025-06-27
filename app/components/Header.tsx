@@ -14,11 +14,17 @@ export default function Header() {
   };
 
   const toggleElectionDropdown = () => {
-    setIsElectionDropdownOpen(!isElectionDropdownOpen);
+    setIsElectionDropdownOpen((open) => {
+      if (!open) setIsResourcesDropdownOpen(false);
+      return !open;
+    });
   };
 
   const toggleResourcesDropdown = () => {
-    setIsResourcesDropdownOpen(!isResourcesDropdownOpen);
+    setIsResourcesDropdownOpen((open) => {
+      if (!open) setIsElectionDropdownOpen(false);
+      return !open;
+    });
   };
 
   // Prevent body scroll when menu is open
