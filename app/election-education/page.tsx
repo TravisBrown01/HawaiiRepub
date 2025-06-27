@@ -2,6 +2,7 @@
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import Image from 'next/image';
+import DonationSection from '../components/DonationSection';
 
 export default function ElectionEducation() {
   return (
@@ -110,48 +111,31 @@ export default function ElectionEducation() {
             </div>
 
             {/* Voting by Mail */}
-            <div className="page-section">
+            <div className="steps-section">
               <h2>Voting by Mail in Hawaii</h2>
-              <div className="mail-voting-content">
-                <div className="mail-voting-info">
-                  <h3>How Mail-In Voting Works</h3>
-                  <p>
-                    Pursuant to <strong>Act 136, SLH 2019</strong>, elections are conducted by mail. All registered voters automatically receive their ballot in the mail approximately eighteen (18) days prior to the election.
-                  </p>
-                  
-                  <div className="process-steps">
-                    <div className="step">
-                      <div className="step-number">1</div>
-                      <div className="step-content">
-                        <h4>Receive Your Ballot</h4>
-                        <p>Ballots are mailed to your registered address 18 days before the election.</p>
-                      </div>
-                    </div>
-                    
-                    <div className="step">
-                      <div className="step-number">2</div>
-                      <div className="step-content">
-                        <h4>Mark Your Ballot</h4>
-                        <p>Review candidates and measures, then make your selections with a pen.</p>
-                      </div>
-                    </div>
-                    
-                    <div className="step">
-                      <div className="step-number">3</div>
-                      <div className="step-content">
-                        <h4>Prepare for Return</h4>
-                        <p>Fold ballot, place in secrecy sleeve, then in return envelope and sign.</p>
-                      </div>
-                    </div>
-                    
-                    <div className="step">
-                      <div className="step-number">4</div>
-                      <div className="step-content">
-                        <h4>Return Your Ballot</h4>
-                        <p>Mail or drop off at designated locations by 7:00 PM on Election Day.</p>
-                      </div>
-                    </div>
-                  </div>
+              <p>
+                Pursuant to <strong>Act 136, SLH 2019</strong>, elections are conducted by mail. All registered voters automatically receive their ballot in the mail approximately eighteen (18) days prior to the election.
+              </p>
+              <div className="steps-grid">
+                <div className="step-card">
+                  <div className="step-number">1</div>
+                  <h3>Receive Your Ballot</h3>
+                  <p>Ballots are mailed to your registered address 18 days before the election.</p>
+                </div>
+                <div className="step-card">
+                  <div className="step-number">2</div>
+                  <h3>Mark Your Ballot</h3>
+                  <p>Review candidates and measures, then make your selections with a pen.</p>
+                </div>
+                <div className="step-card">
+                  <div className="step-number">3</div>
+                  <h3>Prepare for Return</h3>
+                  <p>Fold ballot, place in secrecy sleeve, then in return envelope and sign.</p>
+                </div>
+                <div className="step-card">
+                  <div className="step-number">4</div>
+                  <h3>Return Your Ballot</h3>
+                  <p>Mail or drop off at designated locations by 7:00 PM on Election Day.</p>
                 </div>
               </div>
             </div>
@@ -271,6 +255,14 @@ export default function ElectionEducation() {
                   <p>Active duty military and overseas voters have special voting procedures and extended deadlines.</p>
                   <a href="/military-overseas-voters" className="voter-cta">Learn More →</a>
                 </div>
+                <div className="special-voter-card">
+                  <div className="voter-icon">
+                    <i className="fas fa-wheelchair"></i>
+                  </div>
+                  <h3>Voters Requiring Assistance</h3>
+                  <p>Voters with disabilities or who need assistance have special accommodations and support available at polling locations.</p>
+                  <a href="/voters-requiring-assistance" className="voter-cta">Learn More →</a>
+                </div>
               </div>
             </div>
 
@@ -315,6 +307,9 @@ export default function ElectionEducation() {
             </div>
           </div>
         </section>
+
+        {/* Donation Section */}
+        <DonationSection />
       </main>
       <Footer />
     </div>

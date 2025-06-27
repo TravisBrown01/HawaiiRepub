@@ -242,42 +242,14 @@ export default function MilitaryOverseasVoters() {
                 </div>
               </div>
 
-              {/* Hawaii Office of Elections */}
+              {/* Resources & Contact Information */}
               <div className="contact-section">
-                <h2>Hawaii Office of Elections</h2>
-                <p>
-                  For questions about Hawaii elections and ballot tracking, contact the Hawaii Office of Elections:
-                </p>
-                <div className="contact-grid">
-                  <div className="contact-card">
-                    <h3>Main Office</h3>
-                    <p>Phone: (808) 453-8683</p>
-                    <p>Toll Free: 800-442-8683</p>
-                    <p>Email: elections@hawaii.gov</p>
-                  </div>
-
-                  <div className="contact-card">
-                    <h3>County Elections Divisions</h3>
-                    <p>Contact your County Elections Division to track your ballot status and get local assistance.</p>
-                    <a 
-                      href="https://elections.hawaii.gov/county-elections-divisions/" 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="resource-link"
-                    >
-                      Find County Elections Division →
-                    </a>
-                  </div>
-                </div>
-              </div>
-
-              {/* Additional Resources */}
-              <div className="contact-section">
-                <h2>Additional Resources</h2>
+                <h2>Resources & Contact Information</h2>
                 <div className="contact-grid">
                   <div className="contact-card">
                     <h3>Hawaii Office of Elections</h3>
                     <p><strong>Phone:</strong> (808) 453-8683</p>
+                    <p><strong>Toll Free:</strong> 800-442-8683</p>
                     <p><strong>Email:</strong> elections@hawaii.gov</p>
                     <p><strong>Website:</strong> <a href="https://elections.hawaii.gov" target="_blank" rel="noopener noreferrer">elections.hawaii.gov</a></p>
                   </div>
@@ -288,6 +260,14 @@ export default function MilitaryOverseasVoters() {
                     <p><strong>Hawaii:</strong> (808) 961-8277</p>
                     <p><strong>Maui:</strong> (808) 270-7749</p>
                     <p><strong>Kauai:</strong> (808) 241-4800</p>
+                    <a 
+                      href="https://elections.hawaii.gov/county-elections-divisions/" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="action-btn"
+                    >
+                      Find County Elections Division →
+                    </a>
                   </div>
                 </div>
               </div>

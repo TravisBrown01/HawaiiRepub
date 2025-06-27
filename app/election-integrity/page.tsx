@@ -2,6 +2,7 @@
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import Image from 'next/image';
+import DonationSection from '../components/DonationSection';
 
 export default function ElectionIntegrity() {
   return (
@@ -260,6 +261,9 @@ export default function ElectionIntegrity() {
             </div>
           </div>
         </section>
+
+        {/* Donation Section */}
+        <DonationSection />
       </main>
       <Footer />
     </div>

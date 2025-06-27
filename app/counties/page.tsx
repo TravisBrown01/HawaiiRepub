@@ -3,6 +3,7 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import Image from 'next/image';
 import Link from 'next/link';
+import DonationSection from '../components/DonationSection';
 
 export default function CountiesPage() {
   return (
@@ -176,21 +177,8 @@ export default function CountiesPage() {
           </div>
         </section>
 
-        {/* Call to Action */}
-        <section className="counties-cta" style={{ background: '#fff' }}>
-          <div className="container">
-            <div className="main-content centered">
-              <div className="cta-content">
-                <h2>Get Involved in Your Community</h2>
-                <p>Connect with your local Republican organization and help build a stronger Hawaii</p>
-                <div className="cta-buttons">
-                  <Link href="/about" className="cta-btn cta-btn--primary">Learn More About Us</Link>
-                  <Link href="#" className="cta-btn cta-btn--secondary">Contact Your County GOP</Link>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
+        {/* Donation Section */}
+        <DonationSection />
       </main>
       <Footer />
     </div>

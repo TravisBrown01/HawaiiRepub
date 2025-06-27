@@ -100,7 +100,7 @@ export default function Header() {
         
         <Link href="/about" onClick={() => setIsMenuOpen(false)}>About</Link>
         <Link href="https://secure.winred.com/hawaiigop/storefront/" target="_blank" rel="noopener noreferrer" onClick={() => setIsMenuOpen(false)}>Store</Link>
-        <Link href="https://secure.winred.com/hawaiigop/" target="_blank" rel="noopener noreferrer" onClick={() => setIsMenuOpen(false)}>Donate</Link>
+        <Link href="/donate" onClick={() => setIsMenuOpen(false)}>Donate</Link>
       </nav>
 
       {/* Mobile Menu Overlay */}

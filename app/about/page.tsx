@@ -3,6 +3,7 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import Image from 'next/image';
 import { useState } from 'react';
+import DonationSection from '../components/DonationSection';
 
 export default function About() {
   const [showFreedomMore, setShowFreedomMore] = useState(false);
@@ -154,6 +155,9 @@ export default function About() {
             </div>
           </div>
         </section>
+
+        {/* Donation Section */}
+        <DonationSection />
 
         {/* Principles Section */}
         <section className="principles-section">

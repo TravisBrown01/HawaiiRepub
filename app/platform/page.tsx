@@ -2,6 +2,7 @@
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import Image from 'next/image';
+import DonationSection from '../components/DonationSection';
 
 export default function ResourcesPage() {
   return (
@@ -104,7 +105,15 @@ export default function ResourcesPage() {
                 </a>
               </div>
             </div>
+          </div>
+        </section>
 
+        {/* Donation Section - Full Width */}
+        <DonationSection />
+
+        {/* Main Content Continued */}
+        <section className="page-content">
+          <div className="container">
             {/* County Rules & Bylaws */}
             <div className="page-section">
               <h2>County Rules & Bylaws</h2>
@@ -255,8 +264,9 @@ export default function ResourcesPage() {
             </div>
           </div>
         </section>
+
+        <Footer />
       </main>
-      <Footer />
     </div>
   );
 } 
