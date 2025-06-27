@@ -12,7 +12,7 @@ export default function Footer() {
         </div>
         <div className="footer-social">
           <a href="https://www.facebook.com/HawaiiRepublicanParty" target="_blank" rel="noopener noreferrer" aria-label="Facebook"><i className="fab fa-facebook"></i></a>
-          <a href="https://x.com/thehawaiigop" target="_blank" rel="noopener noreferrer" aria-label="Twitter"><i className="fab fa-twitter"></i></a>
+          <a href="https://x.com/thehawaiigop" target="_blank" rel="noopener noreferrer" aria-label="X (Twitter)"><i className="fab fa-x-twitter"></i></a>
           <a href="https://www.instagram.com/republicanpartyhawaii/" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><i className="fab fa-instagram"></i></a>
         </div>
       </div>
