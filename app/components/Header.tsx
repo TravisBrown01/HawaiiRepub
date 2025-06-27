@@ -37,16 +37,6 @@ export default function Header() {
 
   return (
     <header className="header">
-      <Link href="/" className="logo" aria-label="Hawaii Republican Party Home">
-        <Image
-          src="/images/hawaii-gop-logo.png"
-          alt="Hawaii Republican Party Logo"
-          width={60}
-          height={60}
-          priority
-        />
-      </Link>
-      
       {/* Mobile Menu Button */}
       <button 
         className="mobile-menu-btn"
