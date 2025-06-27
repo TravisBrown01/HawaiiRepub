@@ -7765,3 +7765,26 @@ footer .socials a:hover {
     grid-template-columns: 1fr;
   }
 }
+
+@media (max-width: 768px) {
+  .logo.desktop-only {
+    display: none !important;
+  }
+}
+
+@media (min-width: 769px) {
+  .header {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .logo.desktop-only {
+    display: flex;
+    align-items: center;
+    margin-right: 2rem;
+  }
+  .nav {
+    flex: 1;
+    justify-content: flex-end;
+  }
+}
