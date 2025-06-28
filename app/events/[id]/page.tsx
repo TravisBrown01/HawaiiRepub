@@ -1,17 +1,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { generateClient } from 'aws-amplify/api';
 import { getCurrentUser, fetchAuthSession } from 'aws-amplify/auth';
 import { getEvent } from '../../../src/graphql/queries';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import Header from '../../components/Header';
 import { isValidS3Url } from '../../utils/s3Upload';
-
-const client = generateClient({
-  authMode: 'apiKey'
-});
+import { useAmplifyClient } from '../../hooks/useAmplifyClient';
 
 interface Event {
   id: string;
@@ -30,6 +26,7 @@ interface Event {
 }
 
 function EventDetailPage() {
+  const client = useAmplifyClient();
   const params = useParams();
   const eventId = params.id as string;
   

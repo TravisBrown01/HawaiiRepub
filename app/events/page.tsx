@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { generateClient } from 'aws-amplify/api';
 import { createEvent, updateEvent, deleteEvent } from '../../src/graphql/mutations';
 import { listEvents } from '../../src/graphql/queries';
 import { signUp, confirmSignUp, resetPassword, confirmResetPassword, confirmSignIn } from 'aws-amplify/auth';
@@ -10,10 +9,7 @@ import '@aws-amplify/ui-react/styles.css';
 import Link from 'next/link';
 import Header from '../components/Header';
 import { useAuth } from '../contexts/AuthContext';
-
-const client = generateClient({
-  authMode: 'apiKey'
-});
+import { useAmplifyClient } from '../hooks/useAmplifyClient';
 
 interface Event {
   id: string;
@@ -32,6 +28,7 @@ interface Event {
 }
 
 function EventsPage() {
+  const client = useAmplifyClient();
   const { isAuthenticated, isLoading: authLoading, signOut, signIn, refreshAuthState, validateSession, forceClearSession, debugSession } = useAuth();
   
   const [events, setEvents] = useState<Event[]>([]);

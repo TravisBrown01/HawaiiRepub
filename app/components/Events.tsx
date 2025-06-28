@@ -1,13 +1,9 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
-import { generateClient } from 'aws-amplify/api';
 import { listEvents } from '../../src/graphql/queries';
 import Link from 'next/link';
-
-const client = generateClient({
-  authMode: 'apiKey'
-});
+import { useAmplifyClient } from '../hooks/useAmplifyClient';
 
 interface Event {
   id: string;
@@ -18,9 +14,15 @@ interface Event {
   endTime?: string;
   location: string;
   aboutEvent?: string;
+  details?: string;
+  organizer?: string;
+  contactDetails?: string;
+  hostingOrganization?: string;
+  owner?: string;
 }
 
 export default function Events() {
+  const client = useAmplifyClient();
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
