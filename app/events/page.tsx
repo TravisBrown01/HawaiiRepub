@@ -4,11 +4,12 @@ import React, { useState, useEffect } from 'react';
 import { generateClient } from 'aws-amplify/api';
 import { createEvent, updateEvent, deleteEvent } from '../../src/graphql/mutations';
 import { listEvents } from '../../src/graphql/queries';
-import { signOut, signIn, signUp, confirmSignUp, getCurrentUser, fetchAuthSession, resetPassword, confirmResetPassword, confirmSignIn } from 'aws-amplify/auth';
+import { signIn, signUp, confirmSignUp, resetPassword, confirmResetPassword, confirmSignIn } from 'aws-amplify/auth';
 import { withAuthenticator } from '@aws-amplify/ui-react';
 import '@aws-amplify/ui-react/styles.css';
 import Link from 'next/link';
 import Header from '../components/Header';
+import { useAuth } from '../contexts/AuthContext';
 
 const client = generateClient();
 
@@ -29,6 +30,8 @@ interface Event {
 }
 
 function EventsPage() {
+  const { isAuthenticated, isLoading: authLoading, signOut } = useAuth();
+  
   const [events, setEvents] = useState<Event[]>([]);
   const [newEvent, setNewEvent] = useState({
     title: '',
@@ -49,7 +52,6 @@ function EventsPage() {
   const [showCreateForm, setShowCreateForm] = useState(false);
   
   // Authentication states
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [showAuth, setShowAuth] = useState(false);
   const [authMode, setAuthMode] = useState<'signIn' | 'signUp' | 'confirm' | 'forgotPassword' | 'confirmReset' | 'changePassword'>('signIn');
   const [authForm, setAuthForm] = useState({
@@ -62,7 +64,6 @@ function EventsPage() {
   });
   const [authError, setAuthError] = useState<string | null>(null);
   const [authLoading, setAuthLoading] = useState(false);
-  const [authChecking, setAuthChecking] = useState(true);
   const [authSuccess, setAuthSuccess] = useState<string | null>(null);
   
   // Filter and sorting states
@@ -75,144 +76,33 @@ function EventsPage() {
     const initializeApp = async () => {
       console.log('Initializing app...');
       
-      // Wait a bit for Amplify to be fully configured
-      await new Promise(resolve => setTimeout(resolve, 100));
-      
-      // Check authentication status with retry
-      let authCheckAttempts = 0;
-      const maxAuthAttempts = 3;
-      
-      const attemptAuthCheck = async () => {
-        try {
-          await checkAuthStatus();
-        } catch (error) {
-          console.log(`Auth check attempt ${authCheckAttempts + 1} failed:`, error);
-          authCheckAttempts++;
-          
-          if (authCheckAttempts < maxAuthAttempts) {
-            console.log(`Retrying auth check in 500ms...`);
-            setTimeout(attemptAuthCheck, 500);
-          } else {
-            console.log('Max auth check attempts reached, proceeding with unauthenticated state');
-            setIsAuthenticated(false);
-            setShowAuth(false);
-            setAuthChecking(false);
-          }
-        }
-      };
-      
-      await attemptAuthCheck();
-      
-      // Fetch events after auth check is complete
-      await fetchEvents();
+      // Wait for authentication to be checked
+      if (!authLoading) {
+        await fetchEvents();
+      }
     };
     
     initializeApp();
-  }, []);
+  }, [authLoading]);
 
   useEffect(() => {
-    if (isAuthenticated && !authChecking) {
-      // Only refetch if user becomes authenticated (for admin features)
+    if (isAuthenticated && !authLoading) {
+      // Refetch events when user becomes authenticated (for admin features)
       fetchEvents();
     }
-  }, [isAuthenticated, authChecking]);
-
-  const checkAuthStatus = async () => {
-    try {
-      setAuthChecking(true);
-      
-      // Add a small delay to ensure Amplify is properly initialized
-      await new Promise(resolve => setTimeout(resolve, 100));
-      
-      // Check both current user and auth session
-      const user = await getCurrentUser();
-      const session = await fetchAuthSession();
-      
-      console.log('Auth check - User:', user, 'Session:', session);
-      
-      if (user && session.tokens) {
-        console.log('User is authenticated');
-        setIsAuthenticated(true);
-        setShowAuth(false);
-      } else {
-        console.log('User is not authenticated');
-        setIsAuthenticated(false);
-        setShowAuth(false); // Don't show auth form by default
-      }
-    } catch (error: any) {
-      console.log('Auth check failed:', error);
-      
-      // Handle UserAlreadyAuthenticatedException in auth check
-      if (error.name === 'UserAlreadyAuthenticatedException') {
-        console.log('User is already authenticated, updating state');
-        setIsAuthenticated(true);
-        setShowAuth(false);
-        setAuthChecking(false);
-        return;
-      }
-      
-      // Handle other authentication errors that might indicate the user is actually signed in
-      if (error.name === 'NoUserPoolError' || error.name === 'NoIdentityPoolError') {
-        console.log('Amplify configuration issue, retrying auth check');
-        // Retry once after a longer delay
-        setTimeout(async () => {
-          try {
-            const retryUser = await getCurrentUser();
-            const retrySession = await fetchAuthSession();
-            if (retryUser && retrySession.tokens) {
-              console.log('Retry successful - User is authenticated');
-              setIsAuthenticated(true);
-              setShowAuth(false);
-            } else {
-              console.log('Retry failed - User is not authenticated');
-              setIsAuthenticated(false);
-              setShowAuth(false);
-            }
-          } catch (retryError) {
-            console.log('Retry auth check failed:', retryError);
-            setIsAuthenticated(false);
-            setShowAuth(false);
-          }
-        }, 500);
-        return;
-      }
-      
-      setIsAuthenticated(false);
-      setShowAuth(false); // Don't show auth form by default
-    } finally {
-      setAuthChecking(false);
-    }
-  };
+  }, [isAuthenticated, authLoading]);
 
   const handleSignOut = async () => {
     try {
       console.log('Signing out...');
       await signOut();
       console.log('Sign out successful');
-      setIsAuthenticated(false);
       setShowAuth(false);
-      setAuthChecking(false);
-      
-      // Clear any stored auth data
-      localStorage.removeItem('amplify-authenticator-authToken');
-      sessionStorage.clear();
       
       // Refetch events with public access (api-key) after sign out
-      setTimeout(() => {
-        fetchEvents();
-      }, 100);
-      
+      await fetchEvents();
     } catch (error) {
-      console.error('Error signing out:', error);
-      // Even if sign out fails, clear the local state
-      setIsAuthenticated(false);
-      setShowAuth(false);
-      setAuthChecking(false);
-      
-      // Still refetch events with public access
-      setTimeout(() => {
-        fetchEvents();
-      }, 100);
+      console.error('Sign out error:', error);
     }
   };
 
