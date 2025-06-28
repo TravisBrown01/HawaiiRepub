@@ -50,6 +50,24 @@
       "service": "Lambda"
     }
   },
+  "parameters": {
+    "AMPLIFY_function_S3Trigger19a749dd_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "S3Trigger19a749dd"
+        }
+      ]
+    },
+    "AMPLIFY_function_S3Trigger19a749dd_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "S3Trigger19a749dd"
+        }
+      ]
+    }
+  },
   "storage": {
     "s3daaec405": {
       "dependsOn": [

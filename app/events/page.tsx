@@ -355,7 +355,8 @@ function EventsPage() {
       console.log('Fetching events...');
       
       const result = await client.graphql({
-        query: listEvents
+        query: listEvents,
+        authMode: 'apiKey'
       });
       
       console.log('Events result:', result);
@@ -417,7 +418,7 @@ function EventsPage() {
       await client.graphql({
         query: createEvent,
         variables: { input: formattedEvent },
-        authMode: 'userPool' // Use Cognito for authenticated operations
+        authMode: 'apiKey'
       });
       setNewEvent({ title: '', date: '', endDate: '', startTime: '', endTime: '', location: '', aboutEvent: '', details: '', organizer: '', contactDetails: '', hostingOrganization: '' });
       setShowCreateForm(false);
@@ -483,7 +484,7 @@ function EventsPage() {
       await client.graphql({
         query: updateEvent,
         variables: { input: formattedEvent },
-        authMode: 'userPool' // Use Cognito for authenticated operations
+        authMode: 'apiKey'
       });
       
       setEditingEvent(null);
@@ -495,11 +496,6 @@ function EventsPage() {
   };
 
   const handleDeleteEvent = async (id: string) => {
-    if (!isAuthenticated) {
-      showAuthModal();
-      return;
-    }
-    
     if (!confirm('Are you sure you want to delete this event?')) return;
     
     try {
@@ -509,7 +505,7 @@ function EventsPage() {
       await client.graphql({
         query: deleteEvent,
         variables: { input: { id } },
-        authMode: 'userPool' // Use Cognito for authenticated operations
+        authMode: 'apiKey'
       });
       
       fetchEvents();
