@@ -1,0 +1,32 @@
+{
+  "dev": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-hawaiirepub-dev-78bcd-authRole",
+      "UnauthRoleArn": "arn:aws:iam::872432290779:role/amplify-hawaiirepub-dev-78bcd-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::872432290779:role/amplify-hawaiirepub-dev-78bcd-authRole",
+      "Region": "us-west-2",
+      "DeploymentBucketName": "amplify-hawaiirepub-dev-78bcd-deployment",
+      "UnauthRoleName": "amplify-hawaiirepub-dev-78bcd-unauthRole",
+      "StackName": "amplify-hawaiirepub-dev-78bcd",
+      "StackId": "arn:aws:cloudformation:us-west-2:872432290779:stack/amplify-hawaiirepub-dev-78bcd/c260d730-539e-11f0-85e4-026612a14c15",
+      "AmplifyAppId": "d2hr8rfdkd7l80"
+    },
+    "categories": {
+      "auth": {
+        "hawaiirepubf3509b32": {}
+      },
+      "api": {
+        "hawaiirepub": {}
+      },
+      "storage": {
+        "HRPEventContent": {}
+      },
+      "function": {
+        "S3Trigger84ccaf04": {
+          "deploymentBucketName": "amplify-hawaiirepub-dev-78bcd-deployment",
+          "s3Key": "amplify-builds/S3Trigger84ccaf04-2b57634f2b7639497337-build.zip"
+        }
+      }
+    }
+  }
+}

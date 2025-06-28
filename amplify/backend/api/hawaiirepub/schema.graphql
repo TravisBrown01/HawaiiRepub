@@ -1,0 +1,16 @@
+type Event @model @auth(rules: [{ allow: owner, ownerField: "owner", operations: [create, update, delete, read] }]) {
+  id: ID!
+  title: String!
+  date: AWSDate!
+  endDate: AWSDate
+  startTime: String
+  endTime: String
+  location: String!
+  aboutEvent: String
+  details: String
+  organizer: String
+  contactDetails: String
+  photoUrls: [String]
+  attachmentUrls: [String]
+  owner: String
+} 

@@ -1,0 +1,16 @@
+{
+  "resourceName": "HRPEventContent",
+  "policyUUID": "1835fa79",
+  "bucketName": "hawaiirepub3c8cea135e3144caa0c954df127fb2a2",
+  "storageAccess": "authAndGuest",
+  "guestAccess": [
+    "READ"
+  ],
+  "authAccess": [
+    "CREATE_AND_UPDATE",
+    "READ",
+    "DELETE"
+  ],
+  "triggerFunction": "S3Trigger84ccaf04",
+  "groupAccess": {}
+}

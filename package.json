@@ -9,7 +9,10 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@aws-amplify/storage": "^6.9.1",
+    "@aws-amplify/ui-react": "^6.11.2",
     "@fortawesome/fontawesome-free": "^6.7.2",
+    "aws-amplify": "^6.15.1",
     "next": "15.3.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
