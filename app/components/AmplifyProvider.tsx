@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { Amplify } from 'aws-amplify';
-import awsExports from '../aws-exports';
+import awsExports from '../aws-exports.js';
 
 export default function AmplifyProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
