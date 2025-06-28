@@ -3,10 +3,12 @@ frontend:
   phases:
     preBuild:
       commands:
-        - npm ci
+        - npm ci --only=production
+        - npm cache clean --force
     build:
       commands:
         - npm run build
+        - npm prune --production
   artifacts:
     baseDirectory: .next
     files:
@@ -14,4 +16,5 @@ frontend:
   cache:
     paths:
       - node_modules/**/*
-      - .next/cache/**/* 
+      - .next/cache/**/*
+      - .npm-cache/**/* 
