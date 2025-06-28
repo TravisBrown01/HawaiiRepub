@@ -6,7 +6,7 @@ import { signOut, signIn, signUp, confirmSignUp, getCurrentUser, fetchAuthSessio
 import { createEvent, updateEvent, deleteEvent } from '../../src/graphql/mutations';
 import { listEvents } from '../../src/graphql/queries';
 import Link from 'next/link';
-import { uploadFileToS3, deleteMultipleFilesFromS3 } from '../utils/s3Upload';
+import { uploadFileToS3, deleteMultipleFilesFromS3, isValidS3Url, sanitizeFilename } from '../utils/s3Upload';
 import Header from '../components/Header';
 
 const client = generateClient();
@@ -188,6 +188,25 @@ function EventsPage() {
     } finally {
       setAuthLoading(false);
     }
+  };
+
+  // Function to clean up malformed URLs
+  const cleanPhotoUrls = (urls: string[]): string[] => {
+    return urls.filter(url => {
+      // Check if it's a valid S3 URL
+      if (!isValidS3Url(url)) {
+        console.warn('Invalid S3 URL detected:', url);
+        return false;
+      }
+      
+      // Check if the URL contains malformed patterns
+      if (url.includes('https---') || url.includes('http---')) {
+        console.warn('Malformed URL detected:', url);
+        return false;
+      }
+      
+      return true;
+    });
   };
 
   const fetchEvents = async () => {
@@ -429,6 +448,47 @@ function EventsPage() {
 
   const removeAttachment = (index: number) => {
     setAttachments(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleEditPhotoUpload = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Check file size (8MB limit)
+      if (file.size > 8 * 1024 * 1024) {
+        alert('File size must be less than 8MB');
+        return;
+      }
+      
+      // Check file type
+      if (!file.type.startsWith('image/')) {
+        alert('Please select an image file');
+        return;
+      }
+      
+      const newPhotos = [...editingPhotos];
+      newPhotos[index] = file;
+      setEditingPhotos(newPhotos);
+    }
+  };
+
+  const handleEditAttachmentUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length > 0) {
+      // Check file sizes (10MB limit per file)
+      const validFiles = files.filter(file => {
+        if (file.size > 10 * 1024 * 1024) {
+          alert(`File ${file.name} is too large. Maximum size is 10MB.`);
+          return false;
+        }
+        return true;
+      });
+      
+      setEditingAttachments(prev => [...prev, ...validFiles]);
+    }
+  };
+
+  const removeEditAttachment = (index: number) => {
+    setEditingAttachments(prev => prev.filter((_, i) => i !== index));
   };
 
   // Date parsing and validation functions
@@ -1319,6 +1379,187 @@ function EventsPage() {
                               className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             />
                           </div>
+
+                          {/* Existing Photos Management */}
+                          {existingPhotoUrls.length > 0 && (
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Current Photos ({existingPhotoUrls.length})
+                              </label>
+                              <div className="space-y-3">
+                                {existingPhotoUrls.map((url, index) => (
+                                  <div key={index} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                                    <img 
+                                      src={url} 
+                                      alt={`Photo ${index + 1}`}
+                                      className="w-16 h-16 object-cover rounded-lg"
+                                      onError={(e) => {
+                                        console.error('Failed to load existing photo:', url);
+                                        e.currentTarget.style.display = 'none';
+                                      }}
+                                    />
+                                    <div className="flex-1">
+                                      <p className="text-sm font-medium text-gray-900">Photo {index + 1}</p>
+                                    </div>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setPhotosToDelete([...photosToDelete, url]);
+                                        setExistingPhotoUrls(existingPhotoUrls.filter(u => u !== url));
+                                      }}
+                                      className="text-red-600 hover:text-red-800"
+                                    >
+                                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                      </svg>
+                                    </button>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* New Photos Upload */}
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              Add New Photos (Up to 3)
+                            </label>
+                            <div className="space-y-4">
+                              {[1, 2, 3].map((index) => (
+                                <div key={index}>
+                                  {editingPhotos[index - 1] ? (
+                                    <div className="border-2 border-gray-300 rounded-xl p-4">
+                                      <div className="flex items-center space-x-4">
+                                        <img 
+                                          src={URL.createObjectURL(editingPhotos[index - 1] as File)} 
+                                          alt={`New Photo ${index}`}
+                                          className="w-16 h-16 object-cover rounded-lg"
+                                        />
+                                        <div className="flex-1">
+                                          <p className="text-sm font-medium text-gray-900">{editingPhotos[index - 1]?.name}</p>
+                                          <p className="text-xs text-gray-500">{editingPhotos[index - 1] ? (editingPhotos[index - 1]!.size / 1024 / 1024).toFixed(2) : '0'} MB</p>
+                                        </div>
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            const newPhotos = [...editingPhotos];
+                                            newPhotos[index - 1] = null;
+                                            setEditingPhotos(newPhotos);
+                                          }}
+                                          className="text-red-600 hover:text-red-800"
+                                        >
+                                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                          </svg>
+                                        </button>
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <div 
+                                      className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-blue-400 transition-colors cursor-pointer"
+                                      onClick={() => document.getElementById(`edit-photo-${index}`)?.click()}
+                                    >
+                                      <svg className="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                                        <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+                                      </svg>
+                                      <p className="mt-2 text-sm text-gray-600">Upload new photo {index}</p>
+                                      <p className="text-xs text-gray-500">PNG, JPG, GIF up to 8MB</p>
+                                      <input
+                                        id={`edit-photo-${index}`}
+                                        type="file"
+                                        accept="image/*"
+                                        className="hidden"
+                                        onChange={(e) => handleEditPhotoUpload(e, index - 1)}
+                                      />
+                                    </div>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Existing Attachments Management */}
+                          {existingAttachmentUrls.length > 0 && (
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Current Attachments ({existingAttachmentUrls.length})
+                              </label>
+                              <div className="space-y-3">
+                                {existingAttachmentUrls.map((url, index) => (
+                                  <div key={index} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                                    <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    </svg>
+                                    <div className="flex-1">
+                                      <p className="text-sm font-medium text-gray-900">Document {index + 1}</p>
+                                    </div>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setAttachmentsToDelete([...attachmentsToDelete, url]);
+                                        setExistingAttachmentUrls(existingAttachmentUrls.filter(u => u !== url));
+                                      }}
+                                      className="text-red-600 hover:text-red-800"
+                                    >
+                                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                      </svg>
+                                    </button>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* New Attachments Upload */}
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              Add New Attachments
+                            </label>
+                            {editingAttachments.length > 0 && (
+                              <div className="mb-4 space-y-2">
+                                {editingAttachments.map((file, index) => (
+                                  <div key={index} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                                    <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    </svg>
+                                    <div className="flex-1">
+                                      <p className="text-sm font-medium text-gray-900">{file.name}</p>
+                                      <p className="text-xs text-gray-500">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                                    </div>
+                                    <button
+                                      type="button"
+                                      onClick={() => removeEditAttachment(index)}
+                                      className="text-red-600 hover:text-red-800"
+                                    >
+                                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                      </svg>
+                                    </button>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                            <div 
+                              className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-blue-400 transition-colors cursor-pointer"
+                              onClick={() => document.getElementById('edit-attachments')?.click()}
+                            >
+                              <svg className="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                                <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+                              </svg>
+                              <p className="mt-2 text-sm text-gray-600">Upload PDF agenda or other documents</p>
+                              <p className="text-xs text-gray-500">PDF, DOC, DOCX up to 10MB</p>
+                              <input
+                                id="edit-attachments"
+                                type="file"
+                                accept=".pdf,.doc,.docx"
+                                multiple
+                                className="hidden"
+                                onChange={handleEditAttachmentUpload}
+                              />
+                            </div>
+                          </div>
+
                           <div className="flex space-x-4 pt-4">
                             <button
                               type="submit"
@@ -1373,11 +1614,11 @@ function EventsPage() {
                         {event.photoUrls && event.photoUrls.length > 0 && (
                           <div className="mb-4">
                             <img
-                              src={event.photoUrls[0]}
+                              src={cleanPhotoUrls(event.photoUrls || [])[0]}
                               alt={event.title}
                               className="w-full h-48 object-cover rounded-xl shadow-md"
                               onError={(e) => {
-                                console.error('Failed to load event card image:', event.photoUrls?.[0]);
+                                console.error('Failed to load event card image:', cleanPhotoUrls(event.photoUrls || [])?.[0]);
                                 e.currentTarget.style.display = 'none';
                               }}
                             />
@@ -1450,7 +1691,7 @@ function EventsPage() {
                         
                         {event.attachmentUrls && event.attachmentUrls.length > 0 && (
                           <div className="mt-2">
-                            {event.attachmentUrls.map((url, idx) => (
+                            {cleanPhotoUrls(event.attachmentUrls || []).map((url, idx) => (
                               <a
                                 key={idx}
                                 href={url}

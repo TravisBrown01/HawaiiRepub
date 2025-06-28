@@ -7,6 +7,7 @@ import { getEvent } from '../../../src/graphql/queries';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import Header from '../../components/Header';
+import { isValidS3Url } from '../../utils/s3Upload';
 
 const client = generateClient();
 
@@ -158,6 +159,25 @@ function EventDetailPage() {
     URL.revokeObjectURL(url);
   };
 
+  // Function to clean up malformed URLs
+  const cleanPhotoUrls = (urls: string[]): string[] => {
+    return urls.filter(url => {
+      // Check if it's a valid S3 URL
+      if (!isValidS3Url(url)) {
+        console.warn('Invalid S3 URL detected:', url);
+        return false;
+      }
+      
+      // Check if the URL contains malformed patterns
+      if (url.includes('https---') || url.includes('http---')) {
+        console.warn('Malformed URL detected:', url);
+        return false;
+      }
+      
+      return true;
+    });
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
@@ -261,11 +281,11 @@ function EventDetailPage() {
                   {event.photoUrls && event.photoUrls.length > 0 && (
                     <div className="mb-8">
                       <img
-                        src={event.photoUrls[0]}
+                        src={cleanPhotoUrls(event.photoUrls || [])[0]}
                         alt={event.title}
                         className="w-full h-64 object-cover rounded-2xl shadow-lg"
                         onError={(e) => {
-                          console.error('Failed to load image:', event.photoUrls?.[0]);
+                          console.error('Failed to load image:', cleanPhotoUrls(event.photoUrls || [])?.[0]);
                           // Don't show a fallback image, just hide the element
                           e.currentTarget.style.display = 'none';
                         }}
@@ -278,7 +298,7 @@ function EventDetailPage() {
                     <div className="mb-8">
                       <h3 className="text-lg font-semibold text-gray-900 mb-4">Event Photos</h3>
                       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                        {event.photoUrls.slice(1).map((url, index) => (
+                        {cleanPhotoUrls(event.photoUrls || []).slice(1).map((url, index) => (
                           <img
                             key={index}
                             src={url}
@@ -367,7 +387,7 @@ function EventDetailPage() {
                       <div className="pt-6 border-t border-gray-200">
                         <h3 className="text-lg font-semibold text-gray-900 mb-4">Attachments</h3>
                         <div className="space-y-3">
-                          {event.attachmentUrls.map((url, index) => (
+                          {cleanPhotoUrls(event.attachmentUrls || []).map((url, index) => (
                             <div key={index} className="flex items-center p-3 bg-gray-50 rounded-lg">
                               <svg className="h-8 w-8 text-gray-400 mr-3" fill="currentColor" viewBox="0 0 20 20">
                                 <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" />

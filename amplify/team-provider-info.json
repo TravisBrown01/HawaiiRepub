@@ -26,6 +26,9 @@
           "deploymentBucketName": "amplify-hawaiirepub-dev-78bcd-deployment",
           "s3Key": "amplify-builds/S3Trigger84ccaf04-2b57634f2b7639497337-build.zip"
         }
+      },
+      "hosting": {
+        "S3AndCloudFront": {}
       }
     }
   }
