@@ -78,8 +78,30 @@ function EventsPage() {
       // Wait a bit for Amplify to be fully configured
       await new Promise(resolve => setTimeout(resolve, 100));
       
-      // Check authentication status
-      await checkAuthStatus();
+      // Check authentication status with retry
+      let authCheckAttempts = 0;
+      const maxAuthAttempts = 3;
+      
+      const attemptAuthCheck = async () => {
+        try {
+          await checkAuthStatus();
+        } catch (error) {
+          console.log(`Auth check attempt ${authCheckAttempts + 1} failed:`, error);
+          authCheckAttempts++;
+          
+          if (authCheckAttempts < maxAuthAttempts) {
+            console.log(`Retrying auth check in 500ms...`);
+            setTimeout(attemptAuthCheck, 500);
+          } else {
+            console.log('Max auth check attempts reached, proceeding with unauthenticated state');
+            setIsAuthenticated(false);
+            setShowAuth(false);
+            setAuthChecking(false);
+          }
+        }
+      };
+      
+      await attemptAuthCheck();
       
       // Fetch events after auth check is complete
       await fetchEvents();
@@ -126,6 +148,32 @@ function EventsPage() {
         setIsAuthenticated(true);
         setShowAuth(false);
         setAuthChecking(false);
+        return;
+      }
+      
+      // Handle other authentication errors that might indicate the user is actually signed in
+      if (error.name === 'NoUserPoolError' || error.name === 'NoIdentityPoolError') {
+        console.log('Amplify configuration issue, retrying auth check');
+        // Retry once after a longer delay
+        setTimeout(async () => {
+          try {
+            const retryUser = await getCurrentUser();
+            const retrySession = await fetchAuthSession();
+            if (retryUser && retrySession.tokens) {
+              console.log('Retry successful - User is authenticated');
+              setIsAuthenticated(true);
+              setShowAuth(false);
+            } else {
+              console.log('Retry failed - User is not authenticated');
+              setIsAuthenticated(false);
+              setShowAuth(false);
+            }
+          } catch (retryError) {
+            console.log('Retry auth check failed:', retryError);
+            setIsAuthenticated(false);
+            setShowAuth(false);
+          }
+        }, 500);
         return;
       }
       
@@ -196,10 +244,31 @@ function EventsPage() {
         try {
           // Sign out the existing user first
           await signOut();
-          setAuthError('You were already signed in. Please try signing in again.');
+          console.log('Signed out existing user, refreshing auth state');
+          
           // Clear any stored auth data
           localStorage.removeItem('amplify-authenticator-authToken');
           sessionStorage.clear();
+          
+          // Wait a moment and then check auth status again
+          setTimeout(async () => {
+            try {
+              const user = await getCurrentUser();
+              const session = await fetchAuthSession();
+              if (user && session.tokens) {
+                console.log('Successfully authenticated after clearing state');
+                setIsAuthenticated(true);
+                setShowAuth(false);
+                setAuthError(null);
+              } else {
+                setAuthError('Please try signing in again.');
+              }
+            } catch (refreshError) {
+              console.error('Error refreshing auth state:', refreshError);
+              setAuthError('Please try signing in again.');
+            }
+          }, 1000);
+          
         } catch (signOutError) {
           console.error('Sign out error:', signOutError);
           setAuthError('Authentication state error. Please refresh the page and try again.');
