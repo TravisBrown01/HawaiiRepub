@@ -291,9 +291,9 @@ export default function EventDetailPage() {
       <section className="bg-gradient-to-br from-gray-50 to-gray-100 py-12">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
-            <div className="grid lg:grid-cols-3 gap-8">
+            <div className="grid lg:grid-cols-[2fr_1.2fr] gap-8">
               {/* Main Content */}
-              <div className="lg:col-span-2">
+              <div className="">
                 <div className="bg-white rounded-3xl shadow-xl p-8 border border-gray-100">
                   <h1 className="text-4xl font-bold text-gray-900 mb-4">{event.title}</h1>
                   
@@ -347,8 +347,8 @@ export default function EventDetailPage() {
               </div>
 
               {/* Sidebar */}
-              <div className="lg:col-span-1">
-                <div className="bg-white rounded-3xl shadow-xl p-6 border border-gray-100 sticky top-6">
+              <div className="">
+                <div className="bg-white rounded-3xl shadow-xl p-6 border border-gray-100 sticky top-6 max-w-md w-full mx-auto">
                   {/* Back to Events Button */}
                   <div className="mb-6">
                     <Link 
@@ -432,11 +432,8 @@ export default function EventDetailPage() {
                           href={event.registrationLink}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="w-full bg-[#C62828] text-white px-4 py-3 rounded-xl font-medium hover:bg-[#B71C1C] transition-all duration-200 shadow-sm flex items-center justify-center space-x-2"
+                          className="w-full bg-[#C62828] text-white px-4 py-3 rounded-xl font-medium hover:bg-[#B71C1C] transition-all duration-200 shadow-sm flex items-center justify-center text-base"
                         >
-                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                          </svg>
                           <span>{getRegistrationButtonText(event.registrationType)}</span>
                         </a>
                       )}
