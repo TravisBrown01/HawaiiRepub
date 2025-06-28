@@ -1,22 +1,10 @@
 {
   "api": {
     "hrp": {
-      "dependsOn": [
-        {
-          "category": "auth",
-          "resourceName": "hrpa931ec72"
-        }
-      ],
+      "dependsOn": [],
       "output": {
         "authConfig": {
-          "additionalAuthenticationProviders": [
-            {
-              "authenticationType": "AMAZON_COGNITO_USER_POOLS",
-              "userPoolConfig": {
-                "userPoolId": "authhrpa931ec72"
-              }
-            }
-          ],
+          "additionalAuthenticationProviders": [],
           "defaultAuthentication": {
             "apiKeyConfig": {
               "apiKeyExpirationDays": 7

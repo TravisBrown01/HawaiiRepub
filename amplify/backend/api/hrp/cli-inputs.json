@@ -10,11 +10,6 @@
       "keyDescription": ""
     },
     "conflictResolution": {},
-    "additionalAuthTypes": [
-      {
-        "mode": "AMAZON_COGNITO_USER_POOLS",
-        "cognitoUserPoolId": "authhrpa931ec72"
-      }
-    ]
+    "additionalAuthTypes": []
   }
 }
