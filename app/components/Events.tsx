@@ -5,7 +5,9 @@ import { generateClient } from 'aws-amplify/api';
 import { listEvents } from '../../src/graphql/queries';
 import Link from 'next/link';
 
-const client = generateClient();
+const client = generateClient({
+  authMode: 'apiKey'
+});
 
 interface Event {
   id: string;

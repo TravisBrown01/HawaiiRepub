@@ -11,7 +11,9 @@ import Link from 'next/link';
 import Header from '../components/Header';
 import { useAuth } from '../contexts/AuthContext';
 
-const client = generateClient();
+const client = generateClient({
+  authMode: 'apiKey'
+});
 
 interface Event {
   id: string;
@@ -355,79 +357,21 @@ function EventsPage() {
       setError(null);
       console.log('Fetching events...');
       
-      // Add a small delay to ensure Amplify is ready
-      await new Promise(resolve => setTimeout(resolve, 50));
+      const result = await client.graphql({
+        query: listEvents
+      });
       
-      // Try with API key first
-      try {
-        const result = await client.graphql({
-          query: listEvents,
-          authMode: 'apiKey'
-        });
-        
-        console.log('Events result (API key):', result);
-        
-        if ('data' in result && result.data?.listEvents?.items) {
-          const eventsData = result.data.listEvents.items;
-          console.log('Raw events data:', eventsData);
-          setEvents(eventsData);
-          console.log('Events loaded:', eventsData);
-          return;
-        }
-      } catch (apiKeyError: any) {
-        console.log('API key failed:', apiKeyError.message);
-        
-        // Wait a bit before trying the next method
-        await new Promise(resolve => setTimeout(resolve, 100));
-        
-        // Try without specifying auth mode (should use default)
-        try {
-          const result = await client.graphql({
-            query: listEvents
-          });
-          
-          console.log('Events result (default auth):', result);
-          
-          if ('data' in result && result.data?.listEvents?.items) {
-            const eventsData = result.data.listEvents.items;
-            console.log('Raw events data:', eventsData);
-            setEvents(eventsData);
-            console.log('Events loaded:', eventsData);
-            return;
-          }
-        } catch (defaultError: any) {
-          console.log('Default auth failed:', defaultError.message);
-          
-          // Wait a bit before trying the next method
-          await new Promise(resolve => setTimeout(resolve, 100));
-          
-          // Try with user pool if authenticated
-          if (isAuthenticated) {
-            try {
-              const result = await client.graphql({
-                query: listEvents,
-                authMode: 'userPool'
-              });
-              
-              console.log('Events result (user pool):', result);
-              
-              if ('data' in result && result.data?.listEvents?.items) {
-                const eventsData = result.data.listEvents.items;
-                console.log('Raw events data:', eventsData);
-                setEvents(eventsData);
-                console.log('Events loaded:', eventsData);
-                return;
-              }
-            } catch (userPoolError: any) {
-              console.log('User pool auth failed:', userPoolError.message);
-            }
-          }
-        }
+      console.log('Events result:', result);
+      
+      if ('data' in result && result.data?.listEvents?.items) {
+        const eventsData = result.data.listEvents.items;
+        console.log('Raw events data:', eventsData);
+        setEvents(eventsData);
+        console.log('Events loaded:', eventsData);
+      } else {
+        console.log('No events data found');
+        setEvents([]);
       }
-      
-      // If we get here, no method worked
-      console.log('No events data found');
-      setEvents([]);
       
     } catch (error: any) {
       console.error('Error fetching events:', JSON.stringify(error, null, 2));

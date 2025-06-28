@@ -9,7 +9,9 @@ import Link from 'next/link';
 import Header from '../../components/Header';
 import { isValidS3Url } from '../../utils/s3Upload';
 
-const client = generateClient();
+const client = generateClient({
+  authMode: 'apiKey'
+});
 
 interface Event {
   id: string;
