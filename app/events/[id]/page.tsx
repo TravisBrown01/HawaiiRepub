@@ -7,7 +7,6 @@ import { getEvent } from '../../../src/graphql/queries';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import Header from '../../components/Header';
-import { getSignedUrl } from '../../utils/s3Upload';
 
 const client = generateClient();
 
@@ -38,35 +37,16 @@ function EventDetailPage() {
   const [error, setError] = useState<string | null>(null);
 
   const calculateDuration = (startTime: string, endTime: string): string => {
-    const start = new Date(`2000-01-01T${startTime}`);
-    const end = new Date(`2000-01-01T${endTime}`);
-    const diffMs = end.getTime() - start.getTime();
-    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-    const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+    const start = new Date(`2000-01-01 ${startTime}`);
+    const end = new Date(`2000-01-01 ${endTime}`);
+    const diffMinutes = Math.round((end.getTime() - start.getTime()) / (1000 * 60));
+    const hours = Math.floor(diffMinutes / 60);
+    const minutes = diffMinutes % 60;
     
-    if (diffHours > 0) {
-      return `${diffHours}h ${diffMinutes > 0 ? `${diffMinutes}m` : ''}`.trim();
+    if (hours > 0) {
+      return `${hours}h ${minutes > 0 ? `${minutes}m` : ''}`.trim();
     }
     return `${diffMinutes}m`;
-  };
-
-  const refreshSignedUrls = async (urls: string[]): Promise<string[]> => {
-    return Promise.all(
-      urls.map(async (url) => {
-        // Only refresh if it's a signed URL (contains query parameters)
-        if (url.includes('?') && url.includes('X-Amz-')) {
-          try {
-            const urlObj = new URL(url);
-            const key = urlObj.pathname.substring(1); // Remove leading slash
-            return await getSignedUrl(key);
-          } catch (error) {
-            console.error('Error refreshing signed URL:', error);
-            return url; // Return original if refresh fails
-          }
-        }
-        return url; // Return as-is if not a signed URL
-      })
-    );
   };
 
   useEffect(() => {
@@ -106,14 +86,6 @@ function EventDetailPage() {
       if ('data' in result && result.data?.getEvent) {
         console.log('Event found:', result.data.getEvent);
         const eventData = result.data.getEvent;
-        
-        // Refresh expired signed URLs for photos and attachments
-        if (eventData.photoUrls && eventData.photoUrls.length > 0) {
-          eventData.photoUrls = await refreshSignedUrls(eventData.photoUrls);
-        }
-        if (eventData.attachmentUrls && eventData.attachmentUrls.length > 0) {
-          eventData.attachmentUrls = await refreshSignedUrls(eventData.attachmentUrls);
-        }
         
         setEvent(eventData);
       } else {
@@ -294,7 +266,8 @@ function EventDetailPage() {
                         className="w-full h-64 object-cover rounded-2xl shadow-lg"
                         onError={(e) => {
                           console.error('Failed to load image:', event.photoUrls?.[0]);
-                          e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0yMCAyNEgyNEMyNi4yMDkxIDI0IDI4IDIyLjIwOTEgMjggMjBDMjggMTcuNzkwOSAyNi4yMDkxIDE2IDI0IDE2SDIwQzE3Ljc5MDkgMTYgMTYgMTcuNzkwOSAxNiAyMEMxNiAyMi4yMDkxIDE3Ljc5MDkgMjQgMjAgMjRaIiBmaWxsPSIjOUI5QkEwIi8+CjxwYXRoIGQ9Ik0xNiA0OEg0OEM0OS4xMDQ2IDQ4IDUwIDQ3LjEwNDYgNTAgNDZWMzJDMzIuMjA5MSAzMiAzMCAyOS43OTA5IDMwIDI3QzMwIDI0LjIwOTEgMzIuMjA5MSAyMiAzNSAyMkg0OEM0OS4xMDQ2IDIyIDUwIDIyLjg5NTQgNTAgMjRWMzJDNTAgMzMuMTA0NiA0OS4xMDQ2IDM0IDQ4IDM0SDM1QzMzLjg5NTQgMzQgMzMgMzMuMTA0NiAzMyAzMlYyN0MzMyAyNS44OTU0IDMzLjg5NTQgMjUgMzUgMjVINDhDNDkuMTA0NiAyNSA1MCAyNS44OTU0IDUwIDI3VjQ2QzUwIDQ3LjEwNDYgNDkuMTA0NiA0OCA0OCA0OEgxNloiIGZpbGw9IiM5QjlCQTAiLz4KPC9zdmc+';
+                          // Don't show a fallback image, just hide the element
+                          e.currentTarget.style.display = 'none';
                         }}
                       />
                     </div>
@@ -311,6 +284,10 @@ function EventDetailPage() {
                             src={url}
                             alt={`${event.title} photo ${index + 2}`}
                             className="w-full h-32 object-cover rounded-lg shadow-md"
+                            onError={(e) => {
+                              console.error('Failed to load gallery image:', url);
+                              e.currentTarget.style.display = 'none';
+                            }}
                           />
                         ))}
                       </div>

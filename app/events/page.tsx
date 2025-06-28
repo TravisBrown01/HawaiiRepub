@@ -1376,6 +1376,10 @@ function EventsPage() {
                               src={event.photoUrls[0]}
                               alt={event.title}
                               className="w-full h-48 object-cover rounded-xl shadow-md"
+                              onError={(e) => {
+                                console.error('Failed to load event card image:', event.photoUrls?.[0]);
+                                e.currentTarget.style.display = 'none';
+                              }}
                             />
                           </div>
                         )}

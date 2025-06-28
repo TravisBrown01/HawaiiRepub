@@ -4,8 +4,15 @@ export async function uploadFileToS3(file: File, folder: string = 'events') {
   const filename = `${folder}/${Date.now()}-${file.name}`;
   await uploadData({ key: filename, data: file, options: { contentType: file.type, accessLevel: 'guest' } });
   
-  // Return a signed URL since public access isn't working
-  return await getSignedUrl(filename);
+  // Return a public URL directly since the bucket is configured for public access
+  return getPublicUrl(filename);
+}
+
+// Function to get public URLs (no expiration, no authentication required)
+export function getPublicUrl(filename: string): string {
+  const bucketName = 'hawaiirepub3c8cea135e3144caa0c954df127fb2a278bcd-dev';
+  const region = 'us-west-2';
+  return `https://${bucketName}.s3.${region}.amazonaws.com/${filename}`;
 }
 
 // Function to get signed URLs for authenticated access (for refreshing expired URLs)
@@ -23,9 +30,7 @@ export async function getSignedUrl(filename: string): Promise<string> {
   } catch (error) {
     console.error('Error getting signed URL:', error);
     // Fallback to public URL
-    const bucketName = 'hawaiirepub3c8cea135e3144caa0c954df127fb2a278bcd-dev';
-    const region = 'us-west-2';
-    return `https://${bucketName}.s3.${region}.amazonaws.com/${filename}`;
+    return getPublicUrl(filename);
   }
 }
 
@@ -37,9 +42,7 @@ export function convertToPublicUrl(signedUrl: string): string {
     const filename = pathParts[pathParts.length - 1];
     const folder = pathParts[pathParts.length - 2];
     
-    const bucketName = 'hawaiirepub3c8cea135e3144caa0c954df127fb2a278bcd-dev';
-    const region = 'us-west-2';
-    return `https://${bucketName}.s3.${region}.amazonaws.com/${folder}/${filename}`;
+    return getPublicUrl(`${folder}/${filename}`);
   } catch (error) {
     console.error('Error converting to public URL:', error);
     return signedUrl; // Return original if conversion fails
