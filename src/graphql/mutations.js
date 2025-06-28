@@ -19,6 +19,8 @@ export const createEvent = /* GraphQL */ `
       organizer
       contactDetails
       hostingOrganization
+      registrationLink
+      registrationType
       owner
       createdAt
       updatedAt
@@ -44,6 +46,8 @@ export const updateEvent = /* GraphQL */ `
       organizer
       contactDetails
       hostingOrganization
+      registrationLink
+      registrationType
       owner
       createdAt
       updatedAt
@@ -69,6 +73,8 @@ export const deleteEvent = /* GraphQL */ `
       organizer
       contactDetails
       hostingOrganization
+      registrationLink
+      registrationType
       owner
       createdAt
       updatedAt

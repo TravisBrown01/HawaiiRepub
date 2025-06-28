@@ -24,6 +24,8 @@ interface Event {
   organizer?: string;
   contactDetails?: string;
   hostingOrganization?: string;
+  registrationLink?: string;
+  registrationType?: string;
   owner?: string;
 }
 
@@ -43,7 +45,9 @@ function EventsPage() {
     details: '',
     organizer: '',
     contactDetails: '',
-    hostingOrganization: ''
+    hostingOrganization: '',
+    registrationLink: '',
+    registrationType: ''
   });
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
   const [loading, setLoading] = useState(true);
@@ -413,14 +417,16 @@ function EventsPage() {
         details: newEvent.details || null,
         organizer: newEvent.organizer || null,
         contactDetails: newEvent.contactDetails || null,
-        hostingOrganization: newEvent.hostingOrganization || null
+        hostingOrganization: newEvent.hostingOrganization || null,
+        registrationLink: newEvent.registrationLink || null,
+        registrationType: newEvent.registrationType || null
       };
       await client.graphql({
         query: createEvent,
         variables: { input: formattedEvent },
         authMode: 'apiKey'
       });
-      setNewEvent({ title: '', date: '', endDate: '', startTime: '', endTime: '', location: '', aboutEvent: '', details: '', organizer: '', contactDetails: '', hostingOrganization: '' });
+      setNewEvent({ title: '', date: '', endDate: '', startTime: '', endTime: '', location: '', aboutEvent: '', details: '', organizer: '', contactDetails: '', hostingOrganization: '', registrationLink: '', registrationType: '' });
       setShowCreateForm(false);
       fetchEvents();
     } catch (error) {
@@ -476,7 +482,9 @@ function EventsPage() {
         details: editingEvent.details || null,
         organizer: editingEvent.organizer || null,
         contactDetails: editingEvent.contactDetails || null,
-        hostingOrganization: editingEvent.hostingOrganization || null
+        hostingOrganization: editingEvent.hostingOrganization || null,
+        registrationLink: editingEvent.registrationLink || null,
+        registrationType: editingEvent.registrationType || null
       };
       
       console.log('Updating event:', formattedEvent);
@@ -1300,23 +1308,69 @@ function EventsPage() {
                         <label htmlFor="hostingOrganization" className="block text-sm font-medium text-gray-700 mb-2">
                           Hosting Organization
                         </label>
-                        <select
-                          id="hostingOrganization"
-                          value={newEvent.hostingOrganization}
-                          onChange={(e) => setNewEvent({ ...newEvent, hostingOrganization: e.target.value })}
-                          className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                        >
-                          <option value="">Select hosting organization</option>
-                          <option value="Hawaii Republican Party">Hawaii Republican Party</option>
-                          <option value="Honolulu County Committee">Honolulu County Committee</option>
-                          <option value="Maui County Committee">Maui County Committee</option>
-                          <option value="Kauai County Committee">Kauai County Committee</option>
-                          <option value="West Hawaii County Committee">West Hawaii County Committee</option>
-                          <option value="East Hawaii County Committee">East Hawaii County Committee</option>
-                          <option value="Oahu League of Republican Women">Oahu League of Republican Women</option>
-                          <option value="Hawaii Federation of Republican Women">Hawaii Federation of Republican Women</option>
-                          <option value="Hawaii Young Republicans">Hawaii Young Republicans</option>
-                        </select>
+                        <div className="relative">
+                          <select
+                            id="hostingOrganization"
+                            value={newEvent.hostingOrganization}
+                            onChange={(e) => setNewEvent({ ...newEvent, hostingOrganization: e.target.value })}
+                            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 appearance-none bg-white cursor-pointer"
+                          >
+                            <option value="">Select hosting organization</option>
+                            <option value="Hawaii Republican Party">Hawaii Republican Party</option>
+                            <option value="Honolulu County Committee">Honolulu County Committee</option>
+                            <option value="Maui County Committee">Maui County Committee</option>
+                            <option value="Kauai County Committee">Kauai County Committee</option>
+                            <option value="West Hawaii County Committee">West Hawaii County Committee</option>
+                            <option value="East Hawaii County Committee">East Hawaii County Committee</option>
+                            <option value="Oahu League of Republican Women">Oahu League of Republican Women</option>
+                            <option value="Hawaii Federation of Republican Women">Hawaii Federation of Republican Women</option>
+                            <option value="Hawaii Young Republicans">Hawaii Young Republicans</option>
+                          </select>
+                          <div className="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
+                            <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <label htmlFor="registrationLink" className="block text-sm font-medium text-gray-700 mb-2">
+                          Registration Link (Optional)
+                        </label>
+                        <div className="flex space-x-3">
+                          <div className="flex-1">
+                            <input
+                              id="registrationLink"
+                              type="url"
+                              placeholder="https://example.com/register"
+                              value={newEvent.registrationLink}
+                              onChange={(e) => setNewEvent({ ...newEvent, registrationLink: e.target.value })}
+                              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                            />
+                          </div>
+                          <div className="w-32">
+                            <div className="relative">
+                              <select
+                                id="registrationType"
+                                value={newEvent.registrationType}
+                                onChange={(e) => setNewEvent({ ...newEvent, registrationType: e.target.value })}
+                                className="w-full px-3 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 appearance-none bg-white cursor-pointer text-sm"
+                              >
+                                <option value="">Type</option>
+                                <option value="RSVP">RSVP</option>
+                                <option value="Signup">Signup</option>
+                                <option value="Register">Register</option>
+                                <option value="Get Tickets">Get Tickets</option>
+                              </select>
+                              <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                                <svg className="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                </svg>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
                       </div>
                       
                       <div>
@@ -1513,23 +1567,69 @@ function EventsPage() {
                     <label htmlFor="edit-hostingOrganization" className="block text-sm font-medium text-gray-700 mb-2">
                       Hosting Organization
                     </label>
-                    <select
-                      id="edit-hostingOrganization"
-                      value={editingEvent.hostingOrganization || ''}
-                      onChange={(e) => setEditingEvent({ ...editingEvent, hostingOrganization: e.target.value })}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                    >
-                      <option value="">Select hosting organization</option>
-                      <option value="Hawaii Republican Party">Hawaii Republican Party</option>
-                      <option value="Honolulu County Committee">Honolulu County Committee</option>
-                      <option value="Maui County Committee">Maui County Committee</option>
-                      <option value="Kauai County Committee">Kauai County Committee</option>
-                      <option value="West Hawaii County Committee">West Hawaii County Committee</option>
-                      <option value="East Hawaii County Committee">East Hawaii County Committee</option>
-                      <option value="Oahu League of Republican Women">Oahu League of Republican Women</option>
-                      <option value="Hawaii Federation of Republican Women">Hawaii Federation of Republican Women</option>
-                      <option value="Hawaii Young Republicans">Hawaii Young Republicans</option>
-                    </select>
+                    <div className="relative">
+                      <select
+                        id="edit-hostingOrganization"
+                        value={editingEvent.hostingOrganization || ''}
+                        onChange={(e) => setEditingEvent({ ...editingEvent, hostingOrganization: e.target.value })}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 appearance-none bg-white cursor-pointer"
+                      >
+                        <option value="">Select hosting organization</option>
+                        <option value="Hawaii Republican Party">Hawaii Republican Party</option>
+                        <option value="Honolulu County Committee">Honolulu County Committee</option>
+                        <option value="Maui County Committee">Maui County Committee</option>
+                        <option value="Kauai County Committee">Kauai County Committee</option>
+                        <option value="West Hawaii County Committee">West Hawaii County Committee</option>
+                        <option value="East Hawaii County Committee">East Hawaii County Committee</option>
+                        <option value="Oahu League of Republican Women">Oahu League of Republican Women</option>
+                        <option value="Hawaii Federation of Republican Women">Hawaii Federation of Republican Women</option>
+                        <option value="Hawaii Young Republicans">Hawaii Young Republicans</option>
+                      </select>
+                      <div className="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
+                        <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label htmlFor="edit-registrationLink" className="block text-sm font-medium text-gray-700 mb-2">
+                      Registration Link (Optional)
+                    </label>
+                    <div className="flex space-x-3">
+                      <div className="flex-1">
+                        <input
+                          id="edit-registrationLink"
+                          type="url"
+                          placeholder="https://example.com/register"
+                          value={editingEvent.registrationLink || ''}
+                          onChange={(e) => setEditingEvent({ ...editingEvent, registrationLink: e.target.value })}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                        />
+                      </div>
+                      <div className="w-32">
+                        <div className="relative">
+                          <select
+                            id="edit-registrationType"
+                            value={editingEvent.registrationType || ''}
+                            onChange={(e) => setEditingEvent({ ...editingEvent, registrationType: e.target.value })}
+                            className="w-full px-3 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 appearance-none bg-white cursor-pointer text-sm"
+                          >
+                            <option value="">Type</option>
+                            <option value="RSVP">RSVP</option>
+                            <option value="Signup">Signup</option>
+                            <option value="Register">Register</option>
+                            <option value="Get Tickets">Get Tickets</option>
+                          </select>
+                          <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                            <svg className="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                   
                   <div>

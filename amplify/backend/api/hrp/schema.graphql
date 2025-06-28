@@ -13,5 +13,7 @@ type Event @model @auth(rules: [
   organizer: String
   contactDetails: String
   hostingOrganization: String
+  registrationLink: String
+  registrationType: String
   owner: String
 } 

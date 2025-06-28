@@ -16,6 +16,8 @@ export const getEvent = /* GraphQL */ `
       organizer
       contactDetails
       hostingOrganization
+      registrationLink
+      registrationType
       owner
       createdAt
       updatedAt
@@ -43,6 +45,8 @@ export const listEvents = /* GraphQL */ `
         organizer
         contactDetails
         hostingOrganization
+        registrationLink
+        registrationType
         owner
         createdAt
         updatedAt
