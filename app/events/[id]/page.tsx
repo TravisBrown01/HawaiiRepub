@@ -1,14 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { getCurrentUser, fetchAuthSession } from 'aws-amplify/auth';
+import React, { useEffect, useState } from 'react';
 import { getEvent } from '../../../src/graphql/queries';
-import { useParams } from 'next/navigation';
-import Link from 'next/link';
-import Header from '../../components/Header';
-import { FormattedContent } from '../../components/FormattedContent';
-import { isValidS3Url } from '../../utils/s3Upload';
 import { useAmplifyClient } from '../../hooks/useAmplifyClient';
+import Link from 'next/link';
+import { FormattedContent } from '../../components/FormattedContent';
 
 interface Event {
   id: string;
@@ -23,167 +19,98 @@ interface Event {
   organizer?: string;
   contactDetails?: string;
   hostingOrganization?: string;
+  registrationLink?: string;
+  registrationType?: string;
   owner?: string;
 }
 
-function EventDetailPage() {
-  const client = useAmplifyClient();
-  const params = useParams();
-  const eventId = params.id as string;
-  
+export default function EventDetailPage() {
   const [event, setEvent] = useState<Event | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const client = useAmplifyClient();
 
   const calculateDuration = (startTime: string, endTime: string): string => {
-    const start = new Date(`2000-01-01 ${startTime}`);
-    const end = new Date(`2000-01-01 ${endTime}`);
-    const diffMinutes = Math.round((end.getTime() - start.getTime()) / (1000 * 60));
-    const hours = Math.floor(diffMinutes / 60);
-    const minutes = diffMinutes % 60;
+    const start = new Date(`2000-01-01T${startTime}`);
+    const end = new Date(`2000-01-01T${endTime}`);
+    const diffMs = end.getTime() - start.getTime();
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
     
-    if (hours > 0) {
-      return `${hours}h ${minutes > 0 ? `${minutes}m` : ''}`.trim();
+    if (diffHours > 0) {
+      return `${diffHours}h ${diffMinutes > 0 ? `${diffMinutes}m` : ''}`;
     }
     return `${diffMinutes}m`;
   };
 
   useEffect(() => {
-    if (eventId) {
-      fetchEvent();
-    }
-  }, [eventId]);
-
-  const fetchEvent = async () => {
-    try {
+    const fetchEvent = async () => {
       setLoading(true);
       setError(null);
       
-      console.log('Fetching event with ID:', eventId);
-      
-      // Check authentication status
       try {
-        const user = await getCurrentUser();
-        const session = await fetchAuthSession();
-        console.log('Auth status - User:', user, 'Session:', session);
-      } catch (authError) {
-        console.log('Auth check failed:', authError);
-      }
-      
-      // Check if client is properly initialized
-      if (!client) {
-        throw new Error('Amplify client not initialized');
-      }
-      
-      console.log('Making GraphQL request with variables:', { id: eventId });
-      
-      const result = await client.graphql({
-        query: getEvent,
-        variables: { id: eventId },
-        authMode: 'apiKey'
-      });
-      
-      console.log('GraphQL result:', result);
-      console.log('Result type:', typeof result);
-      console.log('Result keys:', Object.keys(result));
-      
-      if ('data' in result) {
-        console.log('Result has data property');
-        console.log('Data content:', result.data);
+        const pathSegments = window.location.pathname.split('/');
+        const eventId = pathSegments[pathSegments.length - 1];
         
-        if (result.data?.getEvent) {
-          console.log('Event found:', result.data.getEvent);
-          const eventData = result.data.getEvent;
-          setEvent(eventData);
+        const result = await client.graphql({
+          query: getEvent,
+          variables: { id: eventId },
+          authMode: 'apiKey'
+        });
+        
+        if ('data' in result && result.data?.getEvent) {
+          setEvent(result.data.getEvent);
         } else {
-          console.log('getEvent is null or undefined');
-          console.log('Full data object:', JSON.stringify(result.data, null, 2));
-          setError('Event not found - the event may not exist or you may not have permission to view it');
+          setError('Event not found');
         }
-      } else if ('errors' in result) {
-        console.log('GraphQL errors:', result.errors);
-        const errorMessage = Array.isArray(result.errors) && result.errors.length > 0 
-          ? result.errors[0]?.message || 'GraphQL query failed'
-          : 'GraphQL query failed';
-        setError(errorMessage);
-      } else {
-        console.log('Unexpected result structure:', result);
-        setError('Unexpected response format from server');
+      } catch (err: any) {
+        console.error('Error fetching event:', err);
+        setError('Failed to load event');
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error('Error fetching event:', error);
-      console.error('Error details:', {
-        message: error instanceof Error ? error.message : 'Unknown error',
-        stack: error instanceof Error ? error.stack : 'No stack trace',
-        name: error instanceof Error ? error.name : 'Unknown error type'
-      });
-      
-      // More specific error handling
-      if (error instanceof Error) {
-        if (error.message.includes('NoApiKey')) {
-          setError('API configuration error - please contact support');
-        } else if (error.message.includes('Unauthorized')) {
-          setError('You are not authorized to view this event');
-        } else if (error.message.includes('NotFound')) {
-          setError('Event not found - it may have been deleted or moved');
-        } else {
-          setError(`Failed to load event: ${error.message}`);
-        }
-      } else {
-        setError('Failed to load event - unknown error occurred');
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
+
+    fetchEvent();
+  }, [client]);
 
   const downloadICal = (event: Event) => {
     const formatDateForICal = (date: string, time?: string): string => {
       const dateObj = new Date(date);
       if (time) {
-        // Parse time and add to date
-        const timeMatch = time.match(/^(\d{1,2}):(\d{2})\s*(AM|PM|am|pm)?$/);
-        if (timeMatch) {
-          let hours = parseInt(timeMatch[1]);
-          const minutes = parseInt(timeMatch[2]);
-          const ampm = timeMatch[3]?.toUpperCase();
-          
-          if (ampm === 'PM' && hours !== 12) hours += 12;
-          if (ampm === 'AM' && hours === 12) hours = 0;
-          
-          dateObj.setHours(hours, minutes, 0, 0);
-        }
+        const [hours, minutes] = time.split(':');
+        dateObj.setHours(parseInt(hours), parseInt(minutes), 0, 0);
       }
-      
-      return dateObj.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+      return dateObj.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
     };
 
     const startDate = formatDateForICal(event.date, event.startTime);
     const endDate = event.endDate 
-      ? formatDateForICal(event.endDate, event.endTime) 
-      : formatDateForICal(event.date, event.endTime || '23:59');
+      ? formatDateForICal(event.endDate, event.endTime)
+      : event.startTime && event.endTime
+        ? formatDateForICal(event.date, event.endTime)
+        : formatDateForICal(event.date, '23:59');
 
-    const ical = [
+    const icalContent = [
       'BEGIN:VCALENDAR',
       'VERSION:2.0',
-      'PRODID:-//Hawaii Republican Party//Event Calendar//EN',
+      'PRODID:-//Hawaii Republican Party//Event//EN',
       'BEGIN:VEVENT',
-      `UID:${event.id}@hawaiirepublicanparty.com`,
+      `UID:${event.id}@hawaiigop.org`,
       `DTSTART:${startDate}`,
       `DTEND:${endDate}`,
       `SUMMARY:${event.title}`,
       `DESCRIPTION:${event.aboutEvent || ''}`,
       `LOCATION:${event.location}`,
-      `ORGANIZER:${event.organizer || 'Hawaii Republican Party'}`,
       'END:VEVENT',
       'END:VCALENDAR'
     ].join('\r\n');
 
-    const blob = new Blob([ical], { type: 'text/calendar' });
+    const blob = new Blob([icalContent], { type: 'text/calendar' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `${event.title.replace(/[^a-zA-Z0-9]/g, '_')}.ics`;
+    link.download = `${event.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.ics`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -228,24 +155,29 @@ function EventDetailPage() {
     );
   }
 
-  const eventDate = new Date(event.date);
-  const formattedDate = eventDate.toLocaleDateString('en-US', { 
-    weekday: 'long', 
+  const formattedDate = new Date(event.date).toLocaleDateString('en-US', { 
+    weekday: 'long',
     year: 'numeric', 
     month: 'long', 
     day: 'numeric' 
   });
-  const formattedTime = eventDate.toLocaleTimeString('en-US', { 
-    hour: 'numeric', 
-    minute: '2-digit',
-    hour12: true 
-  });
+
+  const formattedTime = event.startTime 
+    ? `${event.startTime}${event.endTime ? ` - ${event.endTime}` : ''}`
+    : 'All day';
+
+  const getRegistrationButtonText = (type?: string) => {
+    switch (type?.toLowerCase()) {
+      case 'rsvp': return 'RSVP Now';
+      case 'signup': return 'Sign Up';
+      case 'register': return 'Register';
+      case 'get tickets': return 'Get Tickets';
+      default: return 'Register';
+    }
+  };
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Header */}
-      <Header />
-
       {/* Breadcrumb Navigation */}
       <section className="bg-gray-50 border-b border-gray-200 py-4">
         <div className="container mx-auto px-4">
@@ -431,19 +363,18 @@ function EventDetailPage() {
                   </div>
                   
                   <h3 className="text-xl font-bold text-gray-900 mb-4">Event Details</h3>
-                  
-                  <div className="space-y-4 mb-6">
-                    <div className="flex items-center justify-between">
-                      <span className="text-gray-600">Date</span>
-                      <span className="font-medium">{formattedDate}</span>
+                  <div className="space-y-6 mb-6">
+                    <div>
+                      <div className="text-sm text-gray-500 font-medium mb-1">Date</div>
+                      <div className="font-semibold text-gray-900 text-base">{formattedDate}</div>
                     </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-gray-600">Time</span>
-                      <span className="font-medium">{formattedTime}</span>
+                    <div>
+                      <div className="text-sm text-gray-500 font-medium mb-1">Time</div>
+                      <div className="font-semibold text-gray-900 text-base">{formattedTime}</div>
                     </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-gray-600">Location</span>
-                      <span className="font-medium text-right">{event.location}</span>
+                    <div>
+                      <div className="text-sm text-gray-500 font-medium mb-1">Location</div>
+                      <div className="font-semibold text-gray-900 text-base whitespace-pre-line">{event.location}</div>
                     </div>
                   </div>
 
@@ -464,25 +395,52 @@ function EventDetailPage() {
                     </div>
                   </div>
 
-                  <div className="mt-6 pt-6 border-t border-gray-200">
-                    <button 
-                      onClick={() => downloadICal(event)}
-                      className="w-full bg-[#C62828] text-white px-6 py-3 rounded-xl font-medium hover:bg-[#B71C1C] transition-colors duration-200 shadow-sm mb-3"
-                    >
-                      Add to Calendar
-                    </button>
-                    {event.contactDetails ? (
-                      <a
-                        href={`mailto:${event.contactDetails}?subject=Question about ${event.title}`}
-                        className="w-full bg-[#C62828] text-white px-6 py-3 rounded-xl font-medium hover:bg-[#B71C1C] transition-colors duration-200 shadow-sm block text-center"
+                  {/* Actions */}
+                  <div className="px-6 py-5 border-t border-gray-100/50 bg-gray-50/30">
+                    <div className="space-y-3">
+                      <button 
+                        onClick={() => downloadICal(event)}
+                        className="w-full bg-[#C62828] text-white px-4 py-3 rounded-xl font-medium hover:bg-[#B71C1C] transition-all duration-200 shadow-sm flex items-center justify-center space-x-2"
                       >
-                        Contact Organizer
-                      </a>
-                    ) : (
-                      <button className="w-full bg-gray-400 text-white px-6 py-3 rounded-xl font-medium cursor-not-allowed">
-                        Contact Organizer
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        <span>Add to Calendar</span>
                       </button>
-                    )}
+                      
+                      {event.contactDetails ? (
+                        <a
+                          href={`mailto:${event.contactDetails}?subject=Question about ${event.title}`}
+                          className="w-full bg-white border border-gray-200 text-gray-700 px-4 py-3 rounded-xl font-medium hover:bg-gray-50 transition-all duration-200 shadow-sm flex items-center justify-center space-x-2"
+                        >
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                          </svg>
+                          <span>Contact Organizer</span>
+                        </a>
+                      ) : (
+                        <button className="w-full bg-gray-100 text-gray-400 px-4 py-3 rounded-xl font-medium cursor-not-allowed flex items-center justify-center space-x-2">
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                          </svg>
+                          <span>Contact Organizer</span>
+                        </button>
+                      )}
+                      
+                      {event.registrationLink && (
+                        <a
+                          href={event.registrationLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="w-full bg-[#C62828] text-white px-4 py-3 rounded-xl font-medium hover:bg-[#B71C1C] transition-all duration-200 shadow-sm flex items-center justify-center space-x-2"
+                        >
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                          </svg>
+                          <span>{getRegistrationButtonText(event.registrationType)}</span>
+                        </a>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -490,19 +448,6 @@ function EventDetailPage() {
           </div>
         </div>
       </section>
-
-      {/* Footer */}
-      <footer className="bg-gray-50 border-t border-gray-200 py-8">
-        <div className="container mx-auto px-4">
-          <div className="text-center">
-            <p className="text-gray-600">
-              © 2025 Hawaii Republican Party. All rights reserved.
-            </p>
-          </div>
-        </div>
-      </footer>
     </div>
   );
-}
-
-export default EventDetailPage; 
+} 
