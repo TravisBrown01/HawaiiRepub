@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { generateClient } from 'aws-amplify/api';
 import { createEvent, updateEvent, deleteEvent } from '../../src/graphql/mutations';
 import { listEvents } from '../../src/graphql/queries';
-import { signOut, signIn, signUp, confirmSignUp, getCurrentUser, fetchAuthSession, resetPassword, confirmResetPassword } from 'aws-amplify/auth';
+import { signOut, signIn, signUp, confirmSignUp, getCurrentUser, fetchAuthSession, resetPassword, confirmResetPassword, confirmSignIn } from 'aws-amplify/auth';
 import { withAuthenticator } from '@aws-amplify/ui-react';
 import '@aws-amplify/ui-react/styles.css';
 import Link from 'next/link';
@@ -51,7 +51,7 @@ function EventsPage() {
   // Authentication states
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [showAuth, setShowAuth] = useState(false);
-  const [authMode, setAuthMode] = useState<'signIn' | 'signUp' | 'confirm' | 'forgotPassword' | 'confirmReset'>('signIn');
+  const [authMode, setAuthMode] = useState<'signIn' | 'signUp' | 'confirm' | 'forgotPassword' | 'confirmReset' | 'changePassword'>('signIn');
   const [authForm, setAuthForm] = useState({
     username: '',
     email: '',
@@ -117,8 +117,18 @@ function EventsPage() {
         setIsAuthenticated(false);
         setShowAuth(false); // Don't show auth form by default
       }
-    } catch (error) {
+    } catch (error: any) {
       console.log('Auth check failed:', error);
+      
+      // Handle UserAlreadyAuthenticatedException in auth check
+      if (error.name === 'UserAlreadyAuthenticatedException') {
+        console.log('User is already authenticated, updating state');
+        setIsAuthenticated(true);
+        setShowAuth(false);
+        setAuthChecking(false);
+        return;
+      }
+      
       setIsAuthenticated(false);
       setShowAuth(false); // Don't show auth form by default
     } finally {
@@ -164,12 +174,38 @@ function EventsPage() {
     setAuthError(null);
     
     try {
-      await signIn({ username: authForm.username, password: authForm.password });
+      const signInResult = await signIn({ username: authForm.username, password: authForm.password });
+      
+      // Check if the user needs to change their password
+      if (signInResult.nextStep?.signInStep === 'CONFIRM_SIGN_IN_WITH_NEW_PASSWORD_REQUIRED') {
+        // User is in FORCE_CHANGE_PASSWORD state
+        setAuthMode('changePassword');
+        setAuthSuccess('Please set a new password to continue.');
+        return;
+      }
+      
+      // Normal successful sign in
       setIsAuthenticated(true);
       setShowAuth(false);
       setAuthForm({ username: '', email: '', password: '', confirmPassword: '', confirmationCode: '', newPassword: '' });
     } catch (error: any) {
       console.error('Sign in error:', error);
+      
+      // Handle UserAlreadyAuthenticatedException
+      if (error.name === 'UserAlreadyAuthenticatedException') {
+        try {
+          // Sign out the existing user first
+          await signOut();
+          setAuthError('You were already signed in. Please try signing in again.');
+          // Clear any stored auth data
+          localStorage.removeItem('amplify-authenticator-authToken');
+          sessionStorage.clear();
+        } catch (signOutError) {
+          console.error('Sign out error:', signOutError);
+          setAuthError('Authentication state error. Please refresh the page and try again.');
+        }
+        return;
+      }
       
       // Handle specific authentication errors with generic messages for security
       if (error.name === 'NotAuthorizedException' || error.name === 'UserNotFoundException') {
@@ -182,6 +218,46 @@ function EventsPage() {
         setAuthError('Too many sign-in attempts. Please try again later.');
       } else {
         setAuthError('Sign in failed. Please check your credentials and try again.');
+      }
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (authForm.newPassword !== authForm.confirmPassword) {
+      setAuthError('Passwords do not match');
+      return;
+    }
+    
+    if (authForm.newPassword.length < 8) {
+      setAuthError('Password must be at least 8 characters long');
+      return;
+    }
+    
+    setAuthLoading(true);
+    setAuthError(null);
+    
+    try {
+      // Complete the sign-in with the new password
+      await confirmSignIn({ challengeResponse: authForm.newPassword });
+      
+      setIsAuthenticated(true);
+      setShowAuth(false);
+      setAuthForm({ username: '', email: '', password: '', confirmPassword: '', confirmationCode: '', newPassword: '' });
+      setAuthSuccess('Password changed successfully! You are now signed in.');
+    } catch (error: any) {
+      console.error('Change password error:', error);
+      
+      if (error.name === 'InvalidPasswordException') {
+        setAuthError('Password does not meet requirements. Please use at least 8 characters.');
+      } else if (error.name === 'NotAuthorizedException') {
+        setAuthError('Invalid password. Please try again.');
+      } else if (error.name === 'TooManyRequestsException') {
+        setAuthError('Too many attempts. Please wait a moment before trying again.');
+      } else {
+        setAuthError('Failed to change password. Please try again.');
       }
     } finally {
       setAuthLoading(false);
@@ -995,6 +1071,55 @@ function EventsPage() {
                       Back to Sign In
                     </button>
                   </div>
+                </div>
+              </form>
+            )}
+
+            {authMode === 'changePassword' && (
+              <form onSubmit={handleChangePassword} className="space-y-6">
+                <div>
+                  <label htmlFor="change-new-password" className="block text-sm font-medium text-gray-700 mb-2">
+                    New Password
+                  </label>
+                  <input
+                    id="change-new-password"
+                    type="password"
+                    placeholder="Enter your new password"
+                    value={authForm.newPassword}
+                    onChange={(e) => setAuthForm({ ...authForm, newPassword: e.target.value })}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#C62828] focus:border-transparent transition-all duration-200"
+                    required
+                  />
+                </div>
+                <div>
+                  <label htmlFor="change-confirm-password" className="block text-sm font-medium text-gray-700 mb-2">
+                    Confirm New Password
+                  </label>
+                  <input
+                    id="change-confirm-password"
+                    type="password"
+                    placeholder="Confirm your new password"
+                    value={authForm.confirmPassword}
+                    onChange={(e) => setAuthForm({ ...authForm, confirmPassword: e.target.value })}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#C62828] focus:border-transparent transition-all duration-200"
+                    required
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={authLoading}
+                  className="w-full bg-[#C62828] text-white px-6 py-3 rounded-xl font-medium hover:bg-[#B71C1C] transition-colors duration-200 shadow-sm disabled:opacity-50"
+                >
+                  {authLoading ? 'Changing Password...' : 'Change Password'}
+                </button>
+                <div className="text-center">
+                  <button
+                    type="button"
+                    onClick={() => setAuthMode('signIn')}
+                    className="text-sm text-[#C62828] hover:text-[#B71C1C] transition-colors"
+                  >
+                    Back to Sign In
+                  </button>
                 </div>
               </form>
             )}
