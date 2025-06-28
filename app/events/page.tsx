@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { generateClient } from 'aws-amplify/api';
 import { createEvent, updateEvent, deleteEvent } from '../../src/graphql/mutations';
 import { listEvents } from '../../src/graphql/queries';
-import { signIn, signUp, confirmSignUp, resetPassword, confirmResetPassword, confirmSignIn } from 'aws-amplify/auth';
+import { signUp, confirmSignUp, resetPassword, confirmResetPassword, confirmSignIn } from 'aws-amplify/auth';
 import { withAuthenticator } from '@aws-amplify/ui-react';
 import '@aws-amplify/ui-react/styles.css';
 import Link from 'next/link';
@@ -30,7 +30,7 @@ interface Event {
 }
 
 function EventsPage() {
-  const { isAuthenticated, isLoading: authLoading, signOut } = useAuth();
+  const { isAuthenticated, isLoading: authLoading, signOut, signIn, refreshAuthState, validateSession, forceClearSession, debugSession } = useAuth();
   
   const [events, setEvents] = useState<Event[]>([]);
   const [newEvent, setNewEvent] = useState({
@@ -63,7 +63,7 @@ function EventsPage() {
     newPassword: ''
   });
   const [authError, setAuthError] = useState<string | null>(null);
-  const [authLoading, setAuthLoading] = useState(false);
+  const [authFormLoading, setAuthFormLoading] = useState(false);
   const [authSuccess, setAuthSuccess] = useState<string | null>(null);
   
   // Filter and sorting states
@@ -108,11 +108,12 @@ function EventsPage() {
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
-    setAuthLoading(true);
+    setAuthFormLoading(true);
     setAuthError(null);
     
     try {
-      const signInResult = await signIn({ username: authForm.username, password: authForm.password });
+      console.log('Attempting sign in...');
+      const signInResult = await signIn(authForm.username, authForm.password);
       
       // Check if the user needs to change their password
       if (signInResult.nextStep?.signInStep === 'CONFIRM_SIGN_IN_WITH_NEW_PASSWORD_REQUIRED') {
@@ -123,48 +124,13 @@ function EventsPage() {
       }
       
       // Normal successful sign in
-      setIsAuthenticated(true);
       setShowAuth(false);
       setAuthForm({ username: '', email: '', password: '', confirmPassword: '', confirmationCode: '', newPassword: '' });
+      
+      // Refresh auth state to ensure UI is updated
+      await refreshAuthState();
     } catch (error: any) {
       console.error('Sign in error:', error);
-      
-      // Handle UserAlreadyAuthenticatedException
-      if (error.name === 'UserAlreadyAuthenticatedException') {
-        try {
-          // Sign out the existing user first
-          await signOut();
-          console.log('Signed out existing user, refreshing auth state');
-          
-          // Clear any stored auth data
-          localStorage.removeItem('amplify-authenticator-authToken');
-          sessionStorage.clear();
-          
-          // Wait a moment and then check auth status again
-          setTimeout(async () => {
-            try {
-              const user = await getCurrentUser();
-              const session = await fetchAuthSession();
-              if (user && session.tokens) {
-                console.log('Successfully authenticated after clearing state');
-                setIsAuthenticated(true);
-                setShowAuth(false);
-                setAuthError(null);
-              } else {
-                setAuthError('Please try signing in again.');
-              }
-            } catch (refreshError) {
-              console.error('Error refreshing auth state:', refreshError);
-              setAuthError('Please try signing in again.');
-            }
-          }, 1000);
-          
-        } catch (signOutError) {
-          console.error('Sign out error:', signOutError);
-          setAuthError('Authentication state error. Please refresh the page and try again.');
-        }
-        return;
-      }
       
       // Handle specific authentication errors with generic messages for security
       if (error.name === 'NotAuthorizedException' || error.name === 'UserNotFoundException') {
@@ -175,11 +141,16 @@ function EventsPage() {
         setAuthError('Too many failed attempts. Please wait a moment before trying again.');
       } else if (error.name === 'LimitExceededException') {
         setAuthError('Too many sign-in attempts. Please try again later.');
+      } else if (error.name === 'UserAlreadyAuthenticatedException') {
+        setAuthError('You are already signed in. Please refresh the page or try signing out first.');
+        // Automatically clear the session and refresh state
+        await forceClearSession();
+        await refreshAuthState();
       } else {
         setAuthError('Sign in failed. Please check your credentials and try again.');
       }
     } finally {
-      setAuthLoading(false);
+      setAuthFormLoading(false);
     }
   };
 
@@ -195,14 +166,13 @@ function EventsPage() {
       return;
     }
     
-    setAuthLoading(true);
+    setAuthFormLoading(true);
     setAuthError(null);
     
     try {
       // Complete the sign-in with the new password
       await confirmSignIn({ challengeResponse: authForm.newPassword });
       
-      setIsAuthenticated(true);
       setShowAuth(false);
       setAuthForm({ username: '', email: '', password: '', confirmPassword: '', confirmationCode: '', newPassword: '' });
       setAuthSuccess('Password changed successfully! You are now signed in.');
@@ -219,7 +189,7 @@ function EventsPage() {
         setAuthError('Failed to change password. Please try again.');
       }
     } finally {
-      setAuthLoading(false);
+      setAuthFormLoading(false);
     }
   };
 
@@ -235,7 +205,7 @@ function EventsPage() {
       return;
     }
     
-    setAuthLoading(true);
+    setAuthFormLoading(true);
     setAuthError(null);
     
     try {
@@ -271,13 +241,13 @@ function EventsPage() {
         setAuthError('Failed to create account. Please try again.');
       }
     } finally {
-      setAuthLoading(false);
+      setAuthFormLoading(false);
     }
   };
 
   const handleConfirmSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    setAuthLoading(true);
+    setAuthFormLoading(true);
     setAuthError(null);
     
     try {
@@ -305,13 +275,13 @@ function EventsPage() {
         setAuthError('Failed to verify account. Please try again.');
       }
     } finally {
-      setAuthLoading(false);
+      setAuthFormLoading(false);
     }
   };
 
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    setAuthLoading(true);
+    setAuthFormLoading(true);
     setAuthError(null);
     setAuthSuccess(null);
     
@@ -332,7 +302,7 @@ function EventsPage() {
         setAuthError('Failed to send reset code. Please try again.');
       }
     } finally {
-      setAuthLoading(false);
+      setAuthFormLoading(false);
     }
   };
 
@@ -348,7 +318,7 @@ function EventsPage() {
       return;
     }
     
-    setAuthLoading(true);
+    setAuthFormLoading(true);
     setAuthError(null);
     
     try {
@@ -375,7 +345,7 @@ function EventsPage() {
         setAuthError('Failed to reset password. Please try again.');
       }
     } finally {
-      setAuthLoading(false);
+      setAuthFormLoading(false);
     }
   };
 
@@ -517,9 +487,24 @@ function EventsPage() {
     }
   };
 
+  // Safe function to show auth modal
+  const showAuthModal = async () => {
+    // First validate the current session
+    const isCurrentlyAuthenticated = await validateSession();
+    
+    // Only show auth modal if user is not authenticated
+    if (!isCurrentlyAuthenticated) {
+      setShowAuth(true);
+    } else {
+      // User is already authenticated, refresh state and don't show modal
+      console.log('User is already authenticated, refreshing state');
+      await refreshAuthState();
+    }
+  };
+
   const startEditingEvent = (event: Event) => {
     if (!isAuthenticated) {
-      setShowAuth(true);
+      showAuthModal();
       return;
     }
     setEditingEvent(event);
@@ -570,7 +555,7 @@ function EventsPage() {
 
   const handleDeleteEvent = async (id: string) => {
     if (!isAuthenticated) {
-      setShowAuth(true);
+      showAuthModal();
       return;
     }
     
@@ -805,8 +790,15 @@ function EventsPage() {
 
   const totalPages = Math.ceil(getSortedAndFilteredEvents().length / EVENTS_PER_PAGE);
 
+  // Debug function to help troubleshoot session issues
+  const handleDebugSession = async () => {
+    console.log('🔍 === DEBUGGING SESSION ===');
+    await debugSession();
+    console.log('🔍 === END DEBUGGING ===');
+  };
+
   // Show loading only briefly while checking auth, then show events
-  if (authChecking && loading) {
+  if (authLoading && loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
         <div className="text-center">
@@ -908,10 +900,10 @@ function EventsPage() {
                 </div>
                 <button
                   type="submit"
-                  disabled={authLoading}
+                  disabled={authFormLoading}
                   className="w-full bg-[#C62828] text-white px-6 py-3 rounded-xl font-medium hover:bg-[#B71C1C] transition-colors duration-200 shadow-sm disabled:opacity-50"
                 >
-                  {authLoading ? 'Signing In...' : 'Sign In'}
+                  {authFormLoading ? 'Signing In...' : 'Sign In'}
                 </button>
                 <div className="text-center space-y-2">
                   <button
@@ -924,6 +916,37 @@ function EventsPage() {
                   <p className="text-sm text-gray-500">
                     Contact the administrator to create an account
                   </p>
+                  
+                  {/* Debug section for authentication issues */}
+                  <div className="mt-4 pt-4 border-t border-gray-200">
+                    <p className="text-xs text-gray-400 mb-2">Having trouble signing in?</p>
+                    <div className="space-y-2">
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          try {
+                            await forceClearSession();
+                            await refreshAuthState();
+                            setAuthError(null);
+                            setAuthSuccess('Session cleared. Please try signing in again.');
+                          } catch (error) {
+                            console.error('Error clearing session:', error);
+                            setAuthError('Failed to clear session. Please refresh the page.');
+                          }
+                        }}
+                        className="text-xs text-gray-500 hover:text-gray-700 underline block"
+                      >
+                        Clear Session & Retry
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleDebugSession}
+                        className="text-xs text-blue-500 hover:text-blue-700 underline block"
+                      >
+                        Debug Session (Check Console)
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </form>
             )}
@@ -945,10 +968,10 @@ function EventsPage() {
                 </div>
                 <button
                   type="submit"
-                  disabled={authLoading}
+                  disabled={authFormLoading}
                   className="w-full bg-[#C62828] text-white px-6 py-3 rounded-xl font-medium hover:bg-[#B71C1C] transition-colors duration-200 shadow-sm disabled:opacity-50"
                 >
-                  {authLoading ? 'Sending Reset Code...' : 'Send Reset Code'}
+                  {authFormLoading ? 'Sending Reset Code...' : 'Send Reset Code'}
                 </button>
                 <div className="text-center">
                   <button
@@ -1008,10 +1031,10 @@ function EventsPage() {
                 </div>
                 <button
                   type="submit"
-                  disabled={authLoading}
+                  disabled={authFormLoading}
                   className="w-full bg-[#C62828] text-white px-6 py-3 rounded-xl font-medium hover:bg-[#B71C1C] transition-colors duration-200 shadow-sm disabled:opacity-50"
                 >
-                  {authLoading ? 'Resetting Password...' : 'Reset Password'}
+                  {authFormLoading ? 'Resetting Password...' : 'Reset Password'}
                 </button>
                 <div className="text-center space-y-2">
                   <button
@@ -1066,10 +1089,10 @@ function EventsPage() {
                 </div>
                 <button
                   type="submit"
-                  disabled={authLoading}
+                  disabled={authFormLoading}
                   className="w-full bg-[#C62828] text-white px-6 py-3 rounded-xl font-medium hover:bg-[#B71C1C] transition-colors duration-200 shadow-sm disabled:opacity-50"
                 >
-                  {authLoading ? 'Changing Password...' : 'Change Password'}
+                  {authFormLoading ? 'Changing Password...' : 'Change Password'}
                 </button>
                 <div className="text-center">
                   <button
@@ -1172,7 +1195,7 @@ function EventsPage() {
                     <p className="mt-1 text-sm text-gray-500">You need to sign in to create events.</p>
                     <div className="mt-6">
                       <button
-                        onClick={() => setShowAuth(true)}
+                        onClick={() => showAuthModal()}
                         className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-xl text-white bg-[#C62828] hover:bg-[#B71C1C] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#C62828]"
                       >
                         Sign In
@@ -1632,7 +1655,7 @@ function EventsPage() {
                   </>
                 ) : (
                   <button
-                    onClick={() => setShowAuth(true)}
+                    onClick={() => showAuthModal()}
                     className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-xl text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#C62828]"
                   >
                     Admin Sign In
