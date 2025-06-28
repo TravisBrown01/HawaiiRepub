@@ -23,10 +23,8 @@ interface Event {
   details?: string;
   organizer?: string;
   contactDetails?: string;
-  photos?: string[];
-  attachments?: string[];
-  photoUrls?: string[];
-  attachmentUrls?: string[];
+  hostingOrganization?: string;
+  owner?: string;
 }
 
 function EventDetailPage() {
@@ -77,6 +75,8 @@ function EventDetailPage() {
         throw new Error('Amplify client not initialized');
       }
       
+      console.log('Making GraphQL request with variables:', { id: eventId });
+      
       const result = await client.graphql({
         query: getEvent,
         variables: { id: eventId },
@@ -84,15 +84,31 @@ function EventDetailPage() {
       });
       
       console.log('GraphQL result:', result);
+      console.log('Result type:', typeof result);
+      console.log('Result keys:', Object.keys(result));
       
-      if ('data' in result && result.data?.getEvent) {
-        console.log('Event found:', result.data.getEvent);
-        const eventData = result.data.getEvent;
+      if ('data' in result) {
+        console.log('Result has data property');
+        console.log('Data content:', result.data);
         
-        setEvent(eventData);
+        if (result.data?.getEvent) {
+          console.log('Event found:', result.data.getEvent);
+          const eventData = result.data.getEvent;
+          setEvent(eventData);
+        } else {
+          console.log('getEvent is null or undefined');
+          console.log('Full data object:', JSON.stringify(result.data, null, 2));
+          setError('Event not found - the event may not exist or you may not have permission to view it');
+        }
+      } else if ('errors' in result) {
+        console.log('GraphQL errors:', result.errors);
+        const errorMessage = Array.isArray(result.errors) && result.errors.length > 0 
+          ? result.errors[0]?.message || 'GraphQL query failed'
+          : 'GraphQL query failed';
+        setError(errorMessage);
       } else {
-        console.log('Event not found in result:', result);
-        setError('Event not found');
+        console.log('Unexpected result structure:', result);
+        setError('Unexpected response format from server');
       }
     } catch (error) {
       console.error('Error fetching event:', error);
@@ -101,7 +117,21 @@ function EventDetailPage() {
         stack: error instanceof Error ? error.stack : 'No stack trace',
         name: error instanceof Error ? error.name : 'Unknown error type'
       });
-      setError(error instanceof Error ? error.message : 'Failed to load event');
+      
+      // More specific error handling
+      if (error instanceof Error) {
+        if (error.message.includes('NoApiKey')) {
+          setError('API configuration error - please contact support');
+        } else if (error.message.includes('Unauthorized')) {
+          setError('You are not authorized to view this event');
+        } else if (error.message.includes('NotFound')) {
+          setError('Event not found - it may have been deleted or moved');
+        } else {
+          setError(`Failed to load event: ${error.message}`);
+        }
+      } else {
+        setError('Failed to load event - unknown error occurred');
+      }
     } finally {
       setLoading(false);
     }
@@ -158,25 +188,6 @@ function EventDetailPage() {
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
-  };
-
-  // Function to clean up malformed URLs
-  const cleanPhotoUrls = (urls: string[]): string[] => {
-    return urls.filter(url => {
-      // Check if it's a valid S3 URL
-      if (!isValidS3Url(url)) {
-        console.warn('Invalid S3 URL detected:', url);
-        return false;
-      }
-      
-      // Check if the URL contains malformed patterns
-      if (url.includes('https---') || url.includes('http---')) {
-        console.warn('Malformed URL detected:', url);
-        return false;
-      }
-      
-      return true;
-    });
   };
 
   if (loading) {
@@ -263,6 +274,88 @@ function EventDetailPage() {
       </section>
 
       {/* Hero Section */}
+      <div className="bg-gradient-to-r from-red-600 to-red-800 text-white rounded-2xl shadow-lg p-8 mb-8">
+        <div className="max-w-4xl mx-auto">
+          <div className="flex items-center space-x-4 mb-4">
+            <Link href="/events" className="text-red-100 hover:text-white transition-colors">
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </Link>
+            <span className="text-red-100">Events</span>
+            <span className="text-red-100">/</span>
+            <span>{event.title}</span>
+          </div>
+          
+          <h1 className="text-4xl font-bold mb-4">{event.title}</h1>
+          
+          <div className="grid md:grid-cols-2 gap-6">
+            <div className="flex items-center space-x-3">
+              <svg className="h-6 w-6 text-red-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              <span className="text-red-100">{formattedDate}</span>
+              {event.endDate && event.endDate !== event.date && (
+                <span className="text-red-100">
+                  - {new Date(event.endDate).toLocaleDateString('en-US', { 
+                    month: 'long', 
+                    day: 'numeric',
+                    year: 'numeric' 
+                  })}
+                </span>
+              )}
+            </div>
+            
+            <div className="flex items-center space-x-3">
+              <svg className="h-6 w-6 text-red-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              <span className="text-red-100">{event.location}</span>
+            </div>
+            
+            {event.startTime && (
+              <div className="flex items-center space-x-3">
+                <svg className="h-6 w-6 text-red-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span className="text-red-100">
+                  {event.startTime}
+                  {event.endTime && ` - ${event.endTime}`}
+                </span>
+              </div>
+            )}
+            
+            {event.organizer && (
+              <div className="flex items-center space-x-3">
+                <svg className="h-6 w-6 text-red-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+                <span className="text-red-100">Organized by {event.organizer}</span>
+              </div>
+            )}
+          </div>
+          
+          <div className="mt-6 flex space-x-4">
+            <button
+              onClick={() => downloadICal(event)}
+              className="px-6 py-3 bg-white text-red-600 font-semibold rounded-full hover:bg-red-50 transition-colors duration-200"
+            >
+              Add to Calendar
+            </button>
+            {event.contactDetails && (
+              <a
+                href={`mailto:${event.contactDetails}`}
+                className="px-6 py-3 border border-white text-white font-semibold rounded-full hover:bg-white hover:text-red-600 transition-colors duration-200"
+              >
+                Contact Organizer
+              </a>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
       <section className="bg-gradient-to-br from-gray-50 to-gray-100 py-12">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
@@ -278,135 +371,43 @@ function EventDetailPage() {
                     </p>
                   )}
 
-                  {/* Event Image */}
-                  {event.photoUrls && event.photoUrls.length > 0 && (
-                    <div className="mb-8">
-                      <img
-                        src={cleanPhotoUrls(event.photoUrls || [])[0]}
-                        alt={event.title}
-                        className="w-full h-64 object-cover rounded-2xl shadow-lg"
-                        onError={(e) => {
-                          console.error('Failed to load image:', cleanPhotoUrls(event.photoUrls || [])?.[0]);
-                          // Don't show a fallback image, just hide the element
-                          e.currentTarget.style.display = 'none';
-                        }}
-                      />
-                    </div>
-                  )}
-
-                  {/* Photo Gallery */}
-                  {event.photoUrls && event.photoUrls.length > 1 && (
-                    <div className="mb-8">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-4">Event Photos</h3>
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                        {cleanPhotoUrls(event.photoUrls || []).slice(1).map((url, index) => (
-                          <img
-                            key={index}
-                            src={url}
-                            alt={`${event.title} photo ${index + 2}`}
-                            className="w-full h-32 object-cover rounded-lg shadow-md"
-                            onError={(e) => {
-                              console.error('Failed to load gallery image:', url);
-                              e.currentTarget.style.display = 'none';
-                            }}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
                   {/* Event Details */}
-                  <div className="space-y-6">
-                    <div className="flex items-start space-x-4">
-                      <div className="flex-shrink-0">
-                        <svg className="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
-                      </div>
-                      <div>
-                        <h3 className="text-lg font-semibold text-gray-900">Date and time</h3>
-                        <p className="text-gray-600">{formattedDate}</p>
-                        {event.endDate && event.endDate !== event.date && (
-                          <p className="text-gray-600">
-                            to {new Date(event.endDate).toLocaleDateString('en-US', { 
-                              weekday: 'long', 
-                              year: 'numeric', 
-                              month: 'long', 
-                              day: 'numeric' 
-                            })}
-                          </p>
-                        )}
-                        {event.startTime && (
-                          <p className="text-gray-600">
-                            {event.startTime}
-                            {event.endTime && ` - ${event.endTime}`}
-                          </p>
-                        )}
-                        {event.startTime && event.endTime && (
-                          <p className="text-sm text-gray-500 mt-1">
-                            Duration: {calculateDuration(event.startTime, event.endTime)}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="flex items-start space-x-4">
-                      <div className="flex-shrink-0">
-                        <svg className="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                        </svg>
-                      </div>
-                      <div>
-                        <h3 className="text-lg font-semibold text-gray-900">Location</h3>
-                        <p className="text-gray-600">{event.location}</p>
-                        <button className="text-[#C62828] hover:text-[#B71C1C] font-medium mt-2 transition-colors">
-                          Get directions
-                        </button>
-                      </div>
-                    </div>
-
+                  <div className="bg-white rounded-2xl shadow-lg p-8 mb-8">
+                    <h2 className="text-2xl font-bold text-gray-900 mb-6">Event Details</h2>
+                    
                     {event.aboutEvent && (
-                      <div className="pt-6 border-t border-gray-200">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-4">About this event</h3>
-                        <div className="prose prose-gray max-w-none">
-                          <p className="text-gray-600 leading-relaxed">{event.aboutEvent}</p>
-                        </div>
+                      <div className="mb-6">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-3">About This Event</h3>
+                        <p className="text-gray-700 leading-relaxed">{event.aboutEvent}</p>
                       </div>
                     )}
-
+                    
+                    {event.hostingOrganization && (
+                      <div className="mb-6">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-3">Hosting Organization</h3>
+                        <p className="text-gray-700 leading-relaxed">{event.hostingOrganization}</p>
+                      </div>
+                    )}
+                    
                     {event.details && (
-                      <div className="pt-6 border-t border-gray-200">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-4">Event Details</h3>
-                        <div className="prose prose-gray max-w-none">
-                          <p className="text-gray-600 leading-relaxed whitespace-pre-wrap">{event.details}</p>
-                        </div>
+                      <div className="mb-6">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-3">Additional Information</h3>
+                        <p className="text-gray-700 leading-relaxed">{event.details}</p>
                       </div>
                     )}
-
-                    {event.attachmentUrls && event.attachmentUrls.length > 0 && (
-                      <div className="pt-6 border-t border-gray-200">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-4">Attachments</h3>
-                        <div className="space-y-3">
-                          {cleanPhotoUrls(event.attachmentUrls || []).map((url, index) => (
-                            <div key={index} className="flex items-center p-3 bg-gray-50 rounded-lg">
-                              <svg className="h-8 w-8 text-gray-400 mr-3" fill="currentColor" viewBox="0 0 20 20">
-                                <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" />
-                              </svg>
-                              <div className="flex-1">
-                                <p className="text-sm font-medium text-gray-900">Document {index + 1}</p>
-                              </div>
-                              <a
-                                href={url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-[#C62828] hover:text-[#B71C1C] text-sm font-medium transition-colors"
-                              >
-                                View
-                              </a>
-                            </div>
-                          ))}
-                        </div>
+                    
+                    {event.contactDetails && (
+                      <div>
+                        <h3 className="text-lg font-semibold text-gray-900 mb-3">Contact Information</h3>
+                        <a 
+                          href={`mailto:${event.contactDetails}`}
+                          className="inline-flex items-center text-red-600 hover:text-red-700 transition-colors"
+                        >
+                          <svg className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                          </svg>
+                          {event.contactDetails}
+                        </a>
                       </div>
                     )}
                   </div>

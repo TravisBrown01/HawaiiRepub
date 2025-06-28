@@ -6,6 +6,11 @@ import awsExports from '../aws-exports';
 
 export default function AmplifyProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
+    console.log('Configuring Amplify...');
+    console.log('API key from aws-exports:', awsExports.aws_appsync_apiKey);
+    console.log('GraphQL endpoint:', awsExports.aws_appsync_graphqlEndpoint);
+    console.log('Region:', awsExports.aws_appsync_region);
+    
     // Configure Amplify with multiple authentication types
     Amplify.configure({
       ...awsExports,
@@ -18,6 +23,8 @@ export default function AmplifyProvider({ children }: { children: React.ReactNod
         }
       }
     });
+    
+    console.log('Amplify configuration complete');
   }, []);
 
   return <>{children}</>;

@@ -52,7 +52,11 @@ export async function uploadFileToS3(file: File, folder: string = 'events') {
 export function getPublicUrl(filename: string): string {
   const bucketName = 'hawaiirepub3c8cea135e3144caa0c954df127fb2a278bcd-dev';
   const region = 'us-west-2';
-  return `https://${bucketName}.s3.${region}.amazonaws.com/${filename}`;
+  
+  // Ensure the filename is properly encoded
+  const encodedFilename = encodeURIComponent(filename).replace(/%2F/g, '/');
+  
+  return `https://${bucketName}.s3.${region}.amazonaws.com/${encodedFilename}`;
 }
 
 // Function to validate if a URL is a valid S3 URL for our bucket
@@ -99,11 +103,29 @@ export async function getSignedUrl(filename: string): Promise<string> {
 export function convertToPublicUrl(signedUrl: string): string {
   try {
     const urlObj = new URL(signedUrl);
-    const pathParts = urlObj.pathname.split('/');
-    const filename = pathParts[pathParts.length - 1];
-    const folder = pathParts[pathParts.length - 2];
     
-    return getPublicUrl(`${folder}/${filename}`);
+    // Remove query parameters (all the AWS signing parameters)
+    const cleanPath = urlObj.pathname;
+    
+    // The path should be like /public/event-photos/filename.ext
+    // We want to extract just the event-photos/filename.ext part
+    const pathParts = cleanPath.split('/').filter(part => part.length > 0);
+    
+    // Skip 'public' if it's in the path
+    const startIndex = pathParts[0] === 'public' ? 1 : 0;
+    const relevantParts = pathParts.slice(startIndex);
+    
+    if (relevantParts.length >= 2) {
+      const folder = relevantParts[0];
+      const filename = relevantParts[1];
+      return getPublicUrl(`${folder}/${filename}`);
+    } else if (relevantParts.length === 1) {
+      // If there's only one part, assume it's a filename
+      return getPublicUrl(relevantParts[0]);
+    }
+    
+    console.error('Could not parse signed URL path:', cleanPath);
+    return signedUrl; // Return original if parsing fails
   } catch (error) {
     console.error('Error converting to public URL:', error);
     return signedUrl; // Return original if conversion fails

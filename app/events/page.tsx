@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { generateClient } from 'aws-amplify/api';
-import { signOut, signIn, signUp, confirmSignUp, getCurrentUser, fetchAuthSession } from 'aws-amplify/auth';
 import { createEvent, updateEvent, deleteEvent } from '../../src/graphql/mutations';
 import { listEvents } from '../../src/graphql/queries';
+import { signOut, signIn, signUp, confirmSignUp, getCurrentUser, fetchAuthSession } from 'aws-amplify/auth';
+import { withAuthenticator } from '@aws-amplify/ui-react';
+import '@aws-amplify/ui-react/styles.css';
 import Link from 'next/link';
-import { uploadFileToS3, deleteMultipleFilesFromS3, isValidS3Url, sanitizeFilename } from '../utils/s3Upload';
 import Header from '../components/Header';
 
 const client = generateClient();
@@ -23,11 +24,8 @@ interface Event {
   details?: string;
   organizer?: string;
   contactDetails?: string;
-  photos?: string[];
-  attachments?: string[];
+  hostingOrganization?: string;
   owner?: string;
-  photoUrls?: string[];
-  attachmentUrls?: string[];
 }
 
 function EventsPage() {
@@ -42,15 +40,10 @@ function EventsPage() {
     aboutEvent: '',
     details: '',
     organizer: '',
-    contactDetails: ''
+    contactDetails: '',
+    hostingOrganization: ''
   });
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
-  const [editingPhotos, setEditingPhotos] = useState<(File | null)[]>([null, null, null]);
-  const [editingAttachments, setEditingAttachments] = useState<File[]>([]);
-  const [existingPhotoUrls, setExistingPhotoUrls] = useState<string[]>([]);
-  const [existingAttachmentUrls, setExistingAttachmentUrls] = useState<string[]>([]);
-  const [photosToDelete, setPhotosToDelete] = useState<string[]>([]);
-  const [attachmentsToDelete, setAttachmentsToDelete] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -69,14 +62,28 @@ function EventsPage() {
   const [authError, setAuthError] = useState<string | null>(null);
   const [authLoading, setAuthLoading] = useState(false);
   const [authChecking, setAuthChecking] = useState(true);
-
-  // Photo upload state
-  const [photos, setPhotos] = useState<(File | null)[]>([null, null, null]);
-  const [attachments, setAttachments] = useState<File[]>([]);
+  
+  // Filter and sorting states
+  const [showPastEvents, setShowPastEvents] = useState(false);
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const EVENTS_PER_PAGE = 6;
 
   useEffect(() => {
-    checkAuthStatus();
-    fetchEvents(); // Fetch events immediately for public viewing
+    const initializeApp = async () => {
+      console.log('Initializing app...');
+      
+      // Wait a bit for Amplify to be fully configured
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      // Check authentication status
+      await checkAuthStatus();
+      
+      // Fetch events after auth check is complete
+      await fetchEvents();
+    };
+    
+    initializeApp();
   }, []);
 
   useEffect(() => {
@@ -97,10 +104,14 @@ function EventsPage() {
       const user = await getCurrentUser();
       const session = await fetchAuthSession();
       
+      console.log('Auth check - User:', user, 'Session:', session);
+      
       if (user && session.tokens) {
+        console.log('User is authenticated');
         setIsAuthenticated(true);
         setShowAuth(false);
       } else {
+        console.log('User is not authenticated');
         setIsAuthenticated(false);
         setShowAuth(false); // Don't show auth form by default
       }
@@ -115,13 +126,33 @@ function EventsPage() {
 
   const handleSignOut = async () => {
     try {
+      console.log('Signing out...');
       await signOut();
+      console.log('Sign out successful');
       setIsAuthenticated(false);
-      setShowAuth(true);
-      setEvents([]);
+      setShowAuth(false);
       setAuthChecking(false);
+      
+      // Clear any stored auth data
+      localStorage.removeItem('amplify-authenticator-authToken');
+      sessionStorage.clear();
+      
+      // Refetch events with public access (api-key) after sign out
+      setTimeout(() => {
+        fetchEvents();
+      }, 100);
+      
     } catch (error) {
       console.error('Error signing out:', error);
+      // Even if sign out fails, clear the local state
+      setIsAuthenticated(false);
+      setShowAuth(false);
+      setAuthChecking(false);
+      
+      // Still refetch events with public access
+      setTimeout(() => {
+        fetchEvents();
+      }, 100);
     }
   };
 
@@ -135,9 +166,21 @@ function EventsPage() {
       setIsAuthenticated(true);
       setShowAuth(false);
       setAuthForm({ username: '', email: '', password: '', confirmPassword: '', confirmationCode: '' });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Sign in error:', error);
-      setAuthError(error instanceof Error ? error.message : 'Failed to sign in');
+      
+      // Handle specific authentication errors with generic messages for security
+      if (error.name === 'NotAuthorizedException' || error.name === 'UserNotFoundException') {
+        setAuthError('Incorrect username or password. Please try again.');
+      } else if (error.name === 'UserNotConfirmedException') {
+        setAuthError('Please verify your email address before signing in.');
+      } else if (error.name === 'TooManyRequestsException') {
+        setAuthError('Too many failed attempts. Please wait a moment before trying again.');
+      } else if (error.name === 'LimitExceededException') {
+        setAuthError('Too many sign-in attempts. Please try again later.');
+      } else {
+        setAuthError('Sign in failed. Please check your credentials and try again.');
+      }
     } finally {
       setAuthLoading(false);
     }
@@ -147,6 +190,11 @@ function EventsPage() {
     e.preventDefault();
     if (authForm.password !== authForm.confirmPassword) {
       setAuthError('Passwords do not match');
+      return;
+    }
+    
+    if (authForm.password.length < 8) {
+      setAuthError('Password must be at least 8 characters long');
       return;
     }
     
@@ -164,9 +212,27 @@ function EventsPage() {
         }
       });
       setAuthMode('confirm');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Sign up error:', error);
-      setAuthError(error instanceof Error ? error.message : 'Failed to sign up');
+      
+      // Handle specific sign-up errors
+      if (error.name === 'UsernameExistsException') {
+        setAuthError('Username already exists. Please choose a different username.');
+      } else if (error.name === 'InvalidPasswordException') {
+        setAuthError('Password does not meet requirements. Please use at least 8 characters.');
+      } else if (error.name === 'InvalidParameterException') {
+        if (error.message?.includes('email')) {
+          setAuthError('Please enter a valid email address.');
+        } else if (error.message?.includes('username')) {
+          setAuthError('Username must be at least 3 characters and contain only letters, numbers, and underscores.');
+        } else {
+          setAuthError('Please check your input and try again.');
+        }
+      } else if (error.name === 'TooManyRequestsException') {
+        setAuthError('Too many sign-up attempts. Please wait a moment before trying again.');
+      } else {
+        setAuthError('Failed to create account. Please try again.');
+      }
     } finally {
       setAuthLoading(false);
     }
@@ -184,31 +250,26 @@ function EventsPage() {
       });
       setAuthMode('signIn');
       setAuthForm({ ...authForm, confirmationCode: '' });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Confirmation error:', error);
-      setAuthError(error instanceof Error ? error.message : 'Failed to confirm sign up');
+      
+      // Handle specific confirmation errors
+      if (error.name === 'CodeMismatchException') {
+        setAuthError('Invalid verification code. Please check your email and try again.');
+      } else if (error.name === 'ExpiredCodeException') {
+        setAuthError('Verification code has expired. Please request a new code.');
+      } else if (error.name === 'NotAuthorizedException') {
+        setAuthError('Account is already confirmed. Please sign in.');
+      } else if (error.name === 'UserNotFoundException') {
+        setAuthError('User not found. Please check your username.');
+      } else if (error.name === 'TooManyRequestsException') {
+        setAuthError('Too many attempts. Please wait a moment before trying again.');
+      } else {
+        setAuthError('Failed to verify account. Please try again.');
+      }
     } finally {
       setAuthLoading(false);
     }
-  };
-
-  // Function to clean up malformed URLs
-  const cleanPhotoUrls = (urls: string[]): string[] => {
-    return urls.filter(url => {
-      // Check if it's a valid S3 URL
-      if (!isValidS3Url(url)) {
-        console.warn('Invalid S3 URL detected:', url);
-        return false;
-      }
-      
-      // Check if the URL contains malformed patterns
-      if (url.includes('https---') || url.includes('http---')) {
-        console.warn('Malformed URL detected:', url);
-        return false;
-      }
-      
-      return true;
-    });
   };
 
   const fetchEvents = async () => {
@@ -217,32 +278,96 @@ function EventsPage() {
       setError(null);
       console.log('Fetching events...');
       
-      const result = await client.graphql({
-        query: listEvents,
-        authMode: 'apiKey' // Use API key for public read access
-      });
+      // Add a small delay to ensure Amplify is ready
+      await new Promise(resolve => setTimeout(resolve, 50));
       
-      console.log('Events result:', result);
-      
-      if ('data' in result && result.data?.listEvents?.items) {
-        const eventsData = result.data.listEvents.items;
-        console.log('Raw events data:', eventsData);
-        setEvents(eventsData);
-        console.log('Events loaded:', eventsData);
-      } else {
-        console.log('No events data found');
-        setEvents([]);
+      // Try with API key first
+      try {
+        const result = await client.graphql({
+          query: listEvents,
+          authMode: 'apiKey'
+        });
+        
+        console.log('Events result (API key):', result);
+        
+        if ('data' in result && result.data?.listEvents?.items) {
+          const eventsData = result.data.listEvents.items;
+          console.log('Raw events data:', eventsData);
+          setEvents(eventsData);
+          console.log('Events loaded:', eventsData);
+          return;
+        }
+      } catch (apiKeyError: any) {
+        console.log('API key failed:', apiKeyError.message);
+        
+        // Wait a bit before trying the next method
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
+        // Try without specifying auth mode (should use default)
+        try {
+          const result = await client.graphql({
+            query: listEvents
+          });
+          
+          console.log('Events result (default auth):', result);
+          
+          if ('data' in result && result.data?.listEvents?.items) {
+            const eventsData = result.data.listEvents.items;
+            console.log('Raw events data:', eventsData);
+            setEvents(eventsData);
+            console.log('Events loaded:', eventsData);
+            return;
+          }
+        } catch (defaultError: any) {
+          console.log('Default auth failed:', defaultError.message);
+          
+          // Wait a bit before trying the next method
+          await new Promise(resolve => setTimeout(resolve, 100));
+          
+          // Try with user pool if authenticated
+          if (isAuthenticated) {
+            try {
+              const result = await client.graphql({
+                query: listEvents,
+                authMode: 'userPool'
+              });
+              
+              console.log('Events result (user pool):', result);
+              
+              if ('data' in result && result.data?.listEvents?.items) {
+                const eventsData = result.data.listEvents.items;
+                console.log('Raw events data:', eventsData);
+                setEvents(eventsData);
+                console.log('Events loaded:', eventsData);
+                return;
+              }
+            } catch (userPoolError: any) {
+              console.log('User pool auth failed:', userPoolError.message);
+            }
+          }
+        }
       }
+      
+      // If we get here, no method worked
+      console.log('No events data found');
+      setEvents([]);
+      
     } catch (error: any) {
       console.error('Error fetching events:', JSON.stringify(error, null, 2));
       
-      // Check if this is a schema migration error
-      if (error.errors && error.errors.some((e: any) => e.message.includes('FieldUndefined'))) {
+      // Handle specific error types
+      if (error.name === 'NoApiKey' || error.message?.includes('NoApiKey')) {
+        console.log('API key error - trying alternative approach');
+        setError('Unable to load events. Please try refreshing the page.');
+      } else if (error.name === 'NoValidAuthTokens' || error.message?.includes('NoValidAuthTokens')) {
+        console.log('Auth token error - this is expected for public access');
+        setError('Unable to load events. Please try refreshing the page.');
+      } else if (error.errors && error.errors.some((e: any) => e.message.includes('FieldUndefined'))) {
         setError('Database schema has been updated. Please try creating a new event to test the new features.');
-        setEvents([]);
       } else {
-        setError(error instanceof Error ? error.message : JSON.stringify(error));
+        setError('Unable to load events. Please try again later.');
       }
+      setEvents([]);
     } finally {
       setLoading(false);
     }
@@ -257,18 +382,6 @@ function EventsPage() {
       const formattedDate = validateAndFormatDate(newEvent.date);
       const formattedEndDate = newEvent.endDate ? validateAndFormatDate(newEvent.endDate) : null;
       
-      // Upload photos to S3 and get URLs
-      const photoUrls: string[] = [];
-      for (const photo of photos.filter(Boolean)) {
-        const url = await uploadFileToS3(photo as File, 'event-photos');
-        photoUrls.push(String(url));
-      }
-      // Upload attachments to S3 and get URLs
-      const attachmentUrls: string[] = [];
-      for (const file of attachments) {
-        const url = await uploadFileToS3(file, 'event-attachments');
-        attachmentUrls.push(String(url));
-      }
       // Format the event data
       const formattedEvent = {
         title: newEvent.title,
@@ -281,17 +394,14 @@ function EventsPage() {
         details: newEvent.details || null,
         organizer: newEvent.organizer || null,
         contactDetails: newEvent.contactDetails || null,
-        photoUrls,
-        attachmentUrls
+        hostingOrganization: newEvent.hostingOrganization || null
       };
       await client.graphql({
         query: createEvent,
         variables: { input: formattedEvent },
         authMode: 'userPool' // Use Cognito for authenticated operations
       });
-      setNewEvent({ title: '', date: '', endDate: '', startTime: '', endTime: '', location: '', aboutEvent: '', details: '', organizer: '', contactDetails: '' });
-      setPhotos([null, null, null]);
-      setAttachments([]);
+      setNewEvent({ title: '', date: '', endDate: '', startTime: '', endTime: '', location: '', aboutEvent: '', details: '', organizer: '', contactDetails: '', hostingOrganization: '' });
       setShowCreateForm(false);
       fetchEvents();
     } catch (error) {
@@ -306,12 +416,6 @@ function EventsPage() {
       return;
     }
     setEditingEvent(event);
-    setExistingPhotoUrls(event.photoUrls || []);
-    setExistingAttachmentUrls(event.attachmentUrls || []);
-    setEditingPhotos([null, null, null]);
-    setEditingAttachments([]);
-    setPhotosToDelete([]);
-    setAttachmentsToDelete([]);
   };
 
   const handleUpdateEvent = async (e: React.FormEvent) => {
@@ -324,39 +428,6 @@ function EventsPage() {
       // Validate and format dates
       const formattedDate = validateAndFormatDate(editingEvent.date);
       const formattedEndDate = editingEvent.endDate ? validateAndFormatDate(editingEvent.endDate) : null;
-      
-      // Upload new photos to S3
-      const newPhotoUrls: string[] = [];
-      for (const photo of editingPhotos.filter(Boolean)) {
-        const url = await uploadFileToS3(photo as File, 'event-photos');
-        newPhotoUrls.push(String(url));
-      }
-      
-      // Upload new attachments to S3
-      const newAttachmentUrls: string[] = [];
-      for (const file of editingAttachments) {
-        const url = await uploadFileToS3(file, 'event-attachments');
-        newAttachmentUrls.push(String(url));
-      }
-      
-      // Combine existing URLs (minus deleted ones) with new URLs
-      const finalPhotoUrls = [
-        ...existingPhotoUrls.filter(url => !photosToDelete.includes(url)),
-        ...newPhotoUrls
-      ];
-      
-      const finalAttachmentUrls = [
-        ...existingAttachmentUrls.filter(url => !attachmentsToDelete.includes(url)),
-        ...newAttachmentUrls
-      ];
-      
-      // Delete files that were marked for deletion
-      if (photosToDelete.length > 0) {
-        await deleteMultipleFilesFromS3(photosToDelete);
-      }
-      if (attachmentsToDelete.length > 0) {
-        await deleteMultipleFilesFromS3(attachmentsToDelete);
-      }
       
       // Format the event data
       const formattedEvent = {
@@ -371,8 +442,7 @@ function EventsPage() {
         details: editingEvent.details || null,
         organizer: editingEvent.organizer || null,
         contactDetails: editingEvent.contactDetails || null,
-        photoUrls: finalPhotoUrls,
-        attachmentUrls: finalAttachmentUrls
+        hostingOrganization: editingEvent.hostingOrganization || null
       };
       
       console.log('Updating event:', formattedEvent);
@@ -384,12 +454,6 @@ function EventsPage() {
       });
       
       setEditingEvent(null);
-      setEditingPhotos([null, null, null]);
-      setEditingAttachments([]);
-      setExistingPhotoUrls([]);
-      setExistingAttachmentUrls([]);
-      setPhotosToDelete([]);
-      setAttachmentsToDelete([]);
       fetchEvents();
     } catch (error) {
       console.error('Error updating event:', JSON.stringify(error, null, 2));
@@ -409,19 +473,6 @@ function EventsPage() {
       setError(null);
       console.log('Deleting event:', id);
       
-      // Find the event to get its file URLs
-      const eventToDelete = events.find(event => event.id === id);
-      if (eventToDelete) {
-        // Delete associated files from S3
-        const filesToDelete: string[] = [];
-        if (eventToDelete.photoUrls) filesToDelete.push(...eventToDelete.photoUrls);
-        if (eventToDelete.attachmentUrls) filesToDelete.push(...eventToDelete.attachmentUrls);
-        
-        if (filesToDelete.length > 0) {
-          await deleteMultipleFilesFromS3(filesToDelete);
-        }
-      }
-      
       await client.graphql({
         query: deleteEvent,
         variables: { input: { id } },
@@ -433,88 +484,6 @@ function EventsPage() {
       console.error('Error deleting event:', JSON.stringify(error, null, 2));
       setError(error instanceof Error ? error.message : JSON.stringify(error));
     }
-  };
-
-  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      // Check file size (8MB limit)
-      if (file.size > 8 * 1024 * 1024) {
-        alert('File size must be less than 8MB');
-        return;
-      }
-      
-      // Check file type
-      if (!file.type.startsWith('image/')) {
-        alert('Please select an image file');
-        return;
-      }
-      
-      const newPhotos = [...photos];
-      newPhotos[index] = file;
-      setPhotos(newPhotos);
-    }
-  };
-
-  const handleAttachmentUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    if (files.length > 0) {
-      // Check file sizes (10MB limit per file)
-      const validFiles = files.filter(file => {
-        if (file.size > 10 * 1024 * 1024) {
-          alert(`File ${file.name} is too large. Maximum size is 10MB.`);
-          return false;
-        }
-        return true;
-      });
-      
-      setAttachments(prev => [...prev, ...validFiles]);
-    }
-  };
-
-  const removeAttachment = (index: number) => {
-    setAttachments(prev => prev.filter((_, i) => i !== index));
-  };
-
-  const handleEditPhotoUpload = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      // Check file size (8MB limit)
-      if (file.size > 8 * 1024 * 1024) {
-        alert('File size must be less than 8MB');
-        return;
-      }
-      
-      // Check file type
-      if (!file.type.startsWith('image/')) {
-        alert('Please select an image file');
-        return;
-      }
-      
-      const newPhotos = [...editingPhotos];
-      newPhotos[index] = file;
-      setEditingPhotos(newPhotos);
-    }
-  };
-
-  const handleEditAttachmentUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    if (files.length > 0) {
-      // Check file sizes (10MB limit per file)
-      const validFiles = files.filter(file => {
-        if (file.size > 10 * 1024 * 1024) {
-          alert(`File ${file.name} is too large. Maximum size is 10MB.`);
-          return false;
-        }
-        return true;
-      });
-      
-      setEditingAttachments(prev => [...prev, ...validFiles]);
-    }
-  };
-
-  const removeEditAttachment = (index: number) => {
-    setEditingAttachments(prev => prev.filter((_, i) => i !== index));
   };
 
   // Date parsing and validation functions
@@ -674,6 +643,61 @@ function EventsPage() {
     URL.revokeObjectURL(url);
   };
 
+  const formatDate = (dateString: string): string => {
+    const date = new Date(dateString);
+    const month = date.toLocaleDateString('en-US', { month: 'long' });
+    const day = date.getDate();
+    const year = date.getFullYear();
+    return `${month} ${day} ${year}`;
+  };
+
+  const formatDateShort = (dateString: string): string => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  };
+
+  // Sort and filter events
+  const getSortedAndFilteredEvents = () => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Start of today
+    
+    return events
+      .filter(event => {
+        if (showPastEvents) {
+          return true; // Show all events
+        }
+        
+        // Check if event is in the future
+        const eventDate = new Date(event.date);
+        eventDate.setHours(0, 0, 0, 0);
+        
+        // If event has an end date, check if it ends in the future
+        if (event.endDate) {
+          const endDate = new Date(event.endDate);
+          endDate.setHours(0, 0, 0, 0);
+          return endDate >= today;
+        }
+        
+        // Otherwise check if the event date is today or in the future
+        return eventDate >= today;
+      })
+      .sort((a, b) => {
+        const dateA = new Date(a.date);
+        const dateB = new Date(b.date);
+        return dateA.getTime() - dateB.getTime(); // Soonest first
+      });
+  };
+
+  // Paginated events
+  const paginatedEvents = () => {
+    const allEvents = getSortedAndFilteredEvents();
+    const startIdx = (currentPage - 1) * EVENTS_PER_PAGE;
+    const endIdx = startIdx + EVENTS_PER_PAGE;
+    return allEvents.slice(startIdx, endIdx);
+  };
+
+  const totalPages = Math.ceil(getSortedAndFilteredEvents().length / EVENTS_PER_PAGE);
+
   // Show loading only briefly while checking auth, then show events
   if (authChecking && loading) {
     return (
@@ -718,14 +742,10 @@ function EventsPage() {
                 className="w-16 h-16 mx-auto mb-4"
               />
               <h1 className="text-2xl font-bold text-gray-900 mb-2">
-                {authMode === 'signIn' && 'Welcome Back'}
-                {authMode === 'signUp' && 'Create Account'}
-                {authMode === 'confirm' && 'Verify Email'}
+                Admin Sign In
               </h1>
               <p className="text-gray-600">
-                {authMode === 'signIn' && 'Sign in to manage your events'}
-                {authMode === 'signUp' && 'Create an account to get started'}
-                {authMode === 'confirm' && 'Enter the verification code sent to your email'}
+                Sign in to manage events
               </p>
             </div>
 
@@ -776,124 +796,14 @@ function EventsPage() {
                   {authLoading ? 'Signing In...' : 'Sign In'}
                 </button>
                 <div className="text-center">
-                  <button
-                    type="button"
-                    onClick={() => setAuthMode('signUp')}
-                    className="text-[#C62828] hover:text-[#B71C1C] text-sm font-medium transition-colors"
-                  >
-                    Don't have an account? Sign up
-                  </button>
+                  <p className="text-sm text-gray-500">
+                    Contact the administrator to create an account
+                  </p>
                 </div>
               </form>
             )}
 
-            {authMode === 'signUp' && (
-              <form onSubmit={handleSignUp} className="space-y-6">
-                <div>
-                  <label htmlFor="signup-username" className="block text-sm font-medium text-gray-700 mb-2">
-                    Username
-                  </label>
-                  <input
-                    id="signup-username"
-                    type="text"
-                    value={authForm.username}
-                    onChange={(e) => setAuthForm({ ...authForm, username: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#C62828] focus:border-transparent transition-all duration-200"
-                    required
-                  />
-                </div>
-                <div>
-                  <label htmlFor="signup-email" className="block text-sm font-medium text-gray-700 mb-2">
-                    Email
-                  </label>
-                  <input
-                    id="signup-email"
-                    type="email"
-                    value={authForm.email}
-                    onChange={(e) => setAuthForm({ ...authForm, email: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#C62828] focus:border-transparent transition-all duration-200"
-                    required
-                  />
-                </div>
-                <div>
-                  <label htmlFor="signup-password" className="block text-sm font-medium text-gray-700 mb-2">
-                    Password
-                  </label>
-                  <input
-                    id="signup-password"
-                    type="password"
-                    value={authForm.password}
-                    onChange={(e) => setAuthForm({ ...authForm, password: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#C62828] focus:border-transparent transition-all duration-200"
-                    required
-                  />
-                </div>
-                <div>
-                  <label htmlFor="signup-confirm-password" className="block text-sm font-medium text-gray-700 mb-2">
-                    Confirm Password
-                  </label>
-                  <input
-                    id="signup-confirm-password"
-                    type="password"
-                    value={authForm.confirmPassword}
-                    onChange={(e) => setAuthForm({ ...authForm, confirmPassword: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#C62828] focus:border-transparent transition-all duration-200"
-                    required
-                  />
-                </div>
-                <button
-                  type="submit"
-                  disabled={authLoading}
-                  className="w-full bg-[#C62828] text-white px-6 py-3 rounded-xl font-medium hover:bg-[#B71C1C] transition-colors duration-200 shadow-sm disabled:opacity-50"
-                >
-                  {authLoading ? 'Creating Account...' : 'Create Account'}
-                </button>
-                <div className="text-center">
-                  <button
-                    type="button"
-                    onClick={() => setAuthMode('signIn')}
-                    className="text-[#C62828] hover:text-[#B71C1C] text-sm font-medium transition-colors"
-                  >
-                    Already have an account? Sign in
-                  </button>
-                </div>
-              </form>
-            )}
-
-            {authMode === 'confirm' && (
-              <form onSubmit={handleConfirmSignUp} className="space-y-6">
-                <div>
-                  <label htmlFor="confirmation-code" className="block text-sm font-medium text-gray-700 mb-2">
-                    Verification Code
-                  </label>
-                  <input
-                    id="confirmation-code"
-                    type="text"
-                    value={authForm.confirmationCode}
-                    onChange={(e) => setAuthForm({ ...authForm, confirmationCode: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#C62828] focus:border-transparent transition-all duration-200"
-                    placeholder="Enter the code sent to your email"
-                    required
-                  />
-                </div>
-                <button
-                  type="submit"
-                  disabled={authLoading}
-                  className="w-full bg-[#C62828] text-white px-6 py-3 rounded-xl font-medium hover:bg-[#B71C1C] transition-colors duration-200 shadow-sm disabled:opacity-50"
-                >
-                  {authLoading ? 'Verifying...' : 'Verify Email'}
-                </button>
-                <div className="text-center">
-                  <button
-                    type="button"
-                    onClick={() => setAuthMode('signIn')}
-                    className="text-[#C62828] hover:text-[#B71C1C] text-sm font-medium transition-colors"
-                  >
-                    Back to Sign In
-                  </button>
-                </div>
-              </form>
-            )}
+            {/* Account creation is handled in the backend - only sign-in is available */}
           </div>
         </div>
       </div>
@@ -936,22 +846,16 @@ function EventsPage() {
           <h1 className="hero-title">Event Management</h1>
           <p className="hero-subtitle">Create and manage your events with ease</p>
           <div className="hero-actions">
-            <button
-              onClick={() => setShowCreateForm(!showCreateForm)}
-              className="cta cta--primary bg-[#C62828] hover:bg-[#B71C1C] text-white"
-            >
-              {showCreateForm ? 'Cancel' : 'Create New Event'}
-            </button>
+            {isAuthenticated && (
+              <button
+                onClick={() => setShowCreateForm(!showCreateForm)}
+                className="cta cta--primary bg-[#C62828] hover:bg-[#B71C1C] text-white"
+              >
+                {showCreateForm ? 'Cancel' : 'Create New Event'}
+              </button>
+            )}
           </div>
         </div>
-        
-        {/* Sign Out Button - Top Right */}
-        <button
-          onClick={handleSignOut}
-          className="absolute top-6 right-6 px-4 py-2 text-sm font-medium text-[#C62828] hover:text-[#B71C1C] transition-colors duration-200"
-        >
-          Sign Out
-        </button>
       </section>
 
       {/* Error Display */}
@@ -1030,8 +934,8 @@ function EventsPage() {
                           placeholder="MM/DD/YYYY (e.g., 12/25/2024)"
                           value={newEvent.date}
                           onChange={(e) => {
-                            // Temporarily disable auto-formatting for debugging
-                            setNewEvent({ ...newEvent, date: e.target.value });
+                            const formatted = formatDateInput(e.target.value);
+                            setNewEvent({ ...newEvent, date: formatted });
                           }}
                           onBlur={(e) => {
                             if (e.target.value && !validateAndFormatDate(e.target.value)) {
@@ -1153,6 +1057,29 @@ function EventsPage() {
                       </div>
                       
                       <div>
+                        <label htmlFor="hostingOrganization" className="block text-sm font-medium text-gray-700 mb-2">
+                          Hosting Organization
+                        </label>
+                        <select
+                          id="hostingOrganization"
+                          value={newEvent.hostingOrganization}
+                          onChange={(e) => setNewEvent({ ...newEvent, hostingOrganization: e.target.value })}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                        >
+                          <option value="">Select hosting organization</option>
+                          <option value="Hawaii Republican Party">Hawaii Republican Party</option>
+                          <option value="Honolulu County Committee">Honolulu County Committee</option>
+                          <option value="Maui County Committee">Maui County Committee</option>
+                          <option value="Kauai County Committee">Kauai County Committee</option>
+                          <option value="West Hawaii County Committee">West Hawaii County Committee</option>
+                          <option value="East Hawaii County Committee">East Hawaii County Committee</option>
+                          <option value="Oahu League of Republican Women">Oahu League of Republican Women</option>
+                          <option value="Hawaii Federation of Republican Women">Hawaii Federation of Republican Women</option>
+                          <option value="Hawaii Young Republicans">Hawaii Young Republicans</option>
+                        </select>
+                      </div>
+                      
+                      <div>
                         <label htmlFor="details" className="block text-sm font-medium text-gray-700 mb-2">
                           Event Details/Agenda (Optional)
                         </label>
@@ -1166,130 +1093,10 @@ function EventsPage() {
                         />
                       </div>
                       
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Photos (Optional - Up to 3)
-                        </label>
-                        <div className="space-y-4">
-                          {[1, 2, 3].map((index) => (
-                            <div key={index}>
-                              {photos[index - 1] ? (
-                                <div className="border-2 border-gray-300 rounded-xl p-4">
-                                  <div className="flex items-center space-x-4">
-                                    <img 
-                                      src={URL.createObjectURL(photos[index - 1] as File)} 
-                                      alt={`Photo ${index}`}
-                                      className="w-16 h-16 object-cover rounded-lg"
-                                    />
-                                    <div className="flex-1">
-                                      <p className="text-sm font-medium text-gray-900">{photos[index - 1]?.name}</p>
-                                      <p className="text-xs text-gray-500">{photos[index - 1] ? (photos[index - 1]!.size / 1024 / 1024).toFixed(2) : '0'} MB</p>
-                                    </div>
-                                    <button
-                                      type="button"
-                                      onClick={() => {
-                                        const newPhotos = [...photos];
-                                        newPhotos[index - 1] = null;
-                                        setPhotos(newPhotos);
-                                      }}
-                                      className="text-red-600 hover:text-red-800"
-                                    >
-                                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                      </svg>
-                                    </button>
-                                  </div>
-                                </div>
-                              ) : (
-                                <div 
-                                  className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-blue-400 transition-colors cursor-pointer"
-                                  onClick={() => document.getElementById(`photo-${index}`)?.click()}
-                                >
-                                  <svg className="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
-                                    <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
-                                  </svg>
-                                  <p className="mt-2 text-sm text-gray-600">Upload photo {index}</p>
-                                  <p className="text-xs text-gray-500">PNG, JPG, GIF up to 8MB</p>
-                                  <input
-                                    id={`photo-${index}`}
-                                    type="file"
-                                    accept="image/*"
-                                    className="hidden"
-                                    onChange={(e) => handlePhotoUpload(e, index - 1)}
-                                  />
-                                </div>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                      
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Attachments (Optional)
-                        </label>
-                        {attachments.length > 0 && (
-                          <div className="mb-4 space-y-2">
-                            {attachments.map((file, index) => (
-                              <div key={index} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-                                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                </svg>
-                                <div className="flex-1">
-                                  <p className="text-sm font-medium text-gray-900">{file.name}</p>
-                                  <p className="text-xs text-gray-500">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
-                                </div>
-                                <button
-                                  type="button"
-                                  onClick={() => removeAttachment(index)}
-                                  className="text-red-600 hover:text-red-800"
-                                >
-                                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                  </svg>
-                                </button>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                        <div 
-                          className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-blue-400 transition-colors cursor-pointer"
-                          onClick={() => document.getElementById('attachments')?.click()}
-                        >
-                          <svg className="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
-                            <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
-                          </svg>
-                          <p className="mt-2 text-sm text-gray-600">Upload PDF agenda or other documents</p>
-                          <p className="text-xs text-gray-500">PDF, DOC, DOCX up to 10MB</p>
-                          <input
-                            id="attachments"
-                            type="file"
-                            accept=".pdf,.doc,.docx"
-                            multiple
-                            className="hidden"
-                            onChange={handleAttachmentUpload}
-                          />
-                        </div>
-                      </div>
-                      
-                      <div>
-                        <label htmlFor="organizer" className="block text-sm font-medium text-gray-700 mb-2">
-                          Organizer (Optional)
-                        </label>
-                        <input
-                          id="organizer"
-                          type="text"
-                          placeholder="Event organizer name"
-                          value={newEvent.organizer}
-                          onChange={(e) => setNewEvent({ ...newEvent, organizer: e.target.value })}
-                          className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                        />
-                      </div>
-                      
                       <div className="flex space-x-4 pt-4">
                         <button
                           type="submit"
-                          className="flex-1 bg-blue-600 text-white px-6 py-3 rounded-xl font-medium hover:bg-blue-700 transition-colors duration-200 shadow-sm"
+                          className="flex-1 bg-[#C62828] text-white px-6 py-3 rounded-xl font-medium hover:bg-[#B71C1C] transition-colors duration-200 shadow-sm"
                         >
                           Create Event
                         </button>
@@ -1304,6 +1111,217 @@ function EventsPage() {
                     </form>
                   </>
                 )}
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Edit Event Form */}
+      {editingEvent && (
+        <section className="py-12 bg-gray-50">
+          <div className="container mx-auto px-4">
+            <div className="max-w-4xl mx-auto">
+              <div className="bg-white rounded-3xl shadow-xl p-8 border border-gray-100">
+                <h2 className="text-2xl font-bold text-gray-900 mb-6">Edit Event</h2>
+                <form onSubmit={handleUpdateEvent} className="space-y-6">
+                  <div>
+                    <label htmlFor="edit-title" className="block text-sm font-medium text-gray-700 mb-2">
+                      Event Title
+                    </label>
+                    <input
+                      id="edit-title"
+                      type="text"
+                      placeholder="Enter event title"
+                      value={editingEvent.title}
+                      onChange={(e) => setEditingEvent({ ...editingEvent, title: e.target.value })}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                      required
+                    />
+                  </div>
+                  
+                  <div>
+                    <label htmlFor="edit-date" className="block text-sm font-medium text-gray-700 mb-2">
+                      Date
+                    </label>
+                    <input
+                      id="edit-date"
+                      type="text"
+                      placeholder="MM/DD/YYYY (e.g., 12/25/2024)"
+                      value={editingEvent.date}
+                      onChange={(e) => setEditingEvent({ ...editingEvent, date: e.target.value })}
+                      onBlur={(e) => {
+                        if (e.target.value && !validateAndFormatDate(e.target.value)) {
+                          setError('Please enter a valid date in MM/DD/YYYY format');
+                        }
+                      }}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                      required
+                    />
+                  </div>
+                  
+                  <div>
+                    <label htmlFor="edit-endDate" className="block text-sm font-medium text-gray-700 mb-2">
+                      End Date (Optional)
+                    </label>
+                    <input
+                      id="edit-endDate"
+                      type="text"
+                      placeholder="MM/DD/YYYY (e.g., 12/26/2024)"
+                      value={editingEvent.endDate || ''}
+                      onChange={(e) => {
+                        const formatted = formatDateInput(e.target.value);
+                        setEditingEvent({ ...editingEvent, endDate: formatted });
+                      }}
+                      onBlur={(e) => {
+                        if (e.target.value && !validateAndFormatDate(e.target.value)) {
+                          setError('Please enter a valid date in MM/DD/YYYY format');
+                        }
+                      }}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label htmlFor="edit-startTime" className="block text-sm font-medium text-gray-700 mb-2">
+                      Start Time (Optional)
+                    </label>
+                    <input
+                      id="edit-startTime"
+                      type="text"
+                      placeholder="HH:MM AM/PM (e.g., 2:30 PM)"
+                      value={editingEvent.startTime || ''}
+                      onChange={(e) => {
+                        const formatted = formatTimeInput(e.target.value);
+                        setEditingEvent({ ...editingEvent, startTime: formatted });
+                      }}
+                      onBlur={(e) => {
+                        if (e.target.value && !validateTime(e.target.value)) {
+                          setError('Please enter a valid time in HH:MM AM/PM format');
+                        }
+                      }}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label htmlFor="edit-endTime" className="block text-sm font-medium text-gray-700 mb-2">
+                      End Time (Optional)
+                    </label>
+                    <input
+                      id="edit-endTime"
+                      type="text"
+                      placeholder="HH:MM AM/PM (e.g., 4:00 PM)"
+                      value={editingEvent.endTime || ''}
+                      onChange={(e) => {
+                        const formatted = formatTimeInput(e.target.value);
+                        setEditingEvent({ ...editingEvent, endTime: formatted });
+                      }}
+                      onBlur={(e) => {
+                        if (e.target.value && !validateTime(e.target.value)) {
+                          setError('Please enter a valid time in HH:MM AM/PM format');
+                        }
+                      }}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label htmlFor="edit-location" className="block text-sm font-medium text-gray-700 mb-2">
+                      Location
+                    </label>
+                    <input
+                      id="edit-location"
+                      type="text"
+                      placeholder="Enter event location"
+                      value={editingEvent.location}
+                      onChange={(e) => setEditingEvent({ ...editingEvent, location: e.target.value })}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                      required
+                    />
+                  </div>
+                  
+                  <div>
+                    <label htmlFor="edit-aboutEvent" className="block text-sm font-medium text-gray-700 mb-2">
+                      About Event (Optional)
+                    </label>
+                    <textarea
+                      id="edit-aboutEvent"
+                      rows={4}
+                      placeholder="Enter event description..."
+                      value={editingEvent.aboutEvent || ''}
+                      onChange={(e) => setEditingEvent({ ...editingEvent, aboutEvent: e.target.value })}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label htmlFor="edit-contactDetails" className="block text-sm font-medium text-gray-700 mb-2">
+                      Contact Email (Optional)
+                    </label>
+                    <input
+                      id="edit-contactDetails"
+                      type="email"
+                      placeholder="organizer@example.com"
+                      value={editingEvent.contactDetails || ''}
+                      onChange={(e) => setEditingEvent({ ...editingEvent, contactDetails: e.target.value })}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label htmlFor="edit-hostingOrganization" className="block text-sm font-medium text-gray-700 mb-2">
+                      Hosting Organization
+                    </label>
+                    <select
+                      id="edit-hostingOrganization"
+                      value={editingEvent.hostingOrganization || ''}
+                      onChange={(e) => setEditingEvent({ ...editingEvent, hostingOrganization: e.target.value })}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                    >
+                      <option value="">Select hosting organization</option>
+                      <option value="Hawaii Republican Party">Hawaii Republican Party</option>
+                      <option value="Honolulu County Committee">Honolulu County Committee</option>
+                      <option value="Maui County Committee">Maui County Committee</option>
+                      <option value="Kauai County Committee">Kauai County Committee</option>
+                      <option value="West Hawaii County Committee">West Hawaii County Committee</option>
+                      <option value="East Hawaii County Committee">East Hawaii County Committee</option>
+                      <option value="Oahu League of Republican Women">Oahu League of Republican Women</option>
+                      <option value="Hawaii Federation of Republican Women">Hawaii Federation of Republican Women</option>
+                      <option value="Hawaii Young Republicans">Hawaii Young Republicans</option>
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label htmlFor="edit-details" className="block text-sm font-medium text-gray-700 mb-2">
+                      Event Details/Agenda (Optional)
+                    </label>
+                    <textarea
+                      id="edit-details"
+                      rows={6}
+                      placeholder="Enter event details, agenda, or additional information..."
+                      value={editingEvent.details || ''}
+                      onChange={(e) => setEditingEvent({ ...editingEvent, details: e.target.value })}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none"
+                    />
+                  </div>
+                  
+                  <div className="flex space-x-4 pt-4">
+                    <button
+                      type="submit"
+                      className="flex-1 bg-[#C62828] text-white px-6 py-3 rounded-xl font-medium hover:bg-[#B71C1C] transition-colors duration-200 shadow-sm"
+                    >
+                      Update Event
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setEditingEvent(null)}
+                      className="flex-1 bg-gray-100 text-gray-700 px-6 py-3 rounded-xl font-medium hover:bg-gray-200 transition-colors duration-200"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </form>
               </div>
             </div>
           </div>
@@ -1379,426 +1397,131 @@ function EventsPage() {
                 </div>
               </div>
             ) : (
-              <div className="grid gap-6">
-                {events.map((event) => (
-                  <div key={event.id} className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
-                    {editingEvent?.id === event.id ? (
-                      <div className="p-8">
-                        <h3 className="text-xl font-semibold text-gray-900 mb-6">Edit Event</h3>
-                        <form onSubmit={handleUpdateEvent} className="space-y-6">
+              <div className="events-list">
+                {paginatedEvents().map((event) => (
+                  <div key={event.id} className="event-card flex flex-col h-full">
+                    <div className="event-date">
+                      {event.endDate && event.endDate !== event.date ? (
+                        <>
                           <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Event Title</label>
-                            <input
-                              type="text"
-                              value={editingEvent.title}
-                              onChange={(e) => setEditingEvent({ ...editingEvent, title: e.target.value })}
-                              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                              required
-                            />
+                            {(() => {
+                              const startDate = new Date(event.date);
+                              const endDate = new Date(event.endDate);
+                              const startMonth = startDate.getMonth();
+                              const endMonth = endDate.getMonth();
+                              const startYear = startDate.getFullYear();
+                              const endYear = endDate.getFullYear();
+                              
+                              if (startMonth === endMonth && startYear === endYear) {
+                                // Same month and year
+                                const month = startDate.toLocaleDateString('en-US', { month: 'long' });
+                                const startDay = startDate.getDate();
+                                const endDay = endDate.getDate();
+                                const year = startYear;
+                                return `${month} ${startDay} - ${endDay} ${year}`;
+                              } else {
+                                // Different months or years
+                                return `${formatDateShort(event.date)} - ${formatDateShort(event.endDate)}`;
+                              }
+                            })()}
                           </div>
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Date</label>
-                            <input
-                              type="text"
-                              placeholder="MM/DD/YYYY (e.g., 12/25/2024)"
-                              value={editingEvent.date}
-                              onChange={(e) => setEditingEvent({ ...editingEvent, date: e.target.value })}
-                              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                              required
-                            />
+                          <div className="text-sm text-gray-500 mt-1">
+                            {event.startTime && event.startTime}
                           </div>
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">End Date</label>
-                            <input
-                              type="text"
-                              placeholder="MM/DD/YYYY (e.g., 12/26/2024)"
-                              value={editingEvent.endDate || ''}
-                              onChange={(e) => setEditingEvent({ ...editingEvent, endDate: e.target.value })}
-                              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            />
+                        </>
+                      ) : (
+                        <>
+                          <div>{formatDate(event.date)}</div>
+                          <div className="text-sm text-gray-500 mt-1">
+                            {event.startTime && event.startTime}
                           </div>
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Start Time</label>
-                            <input
-                              type="text"
-                              placeholder="HH:MM AM/PM (e.g., 2:30 PM)"
-                              value={editingEvent.startTime || ''}
-                              onChange={(e) => setEditingEvent({ ...editingEvent, startTime: e.target.value })}
-                              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">End Time</label>
-                            <input
-                              type="text"
-                              placeholder="HH:MM AM/PM (e.g., 4:00 PM)"
-                              value={editingEvent.endTime || ''}
-                              onChange={(e) => setEditingEvent({ ...editingEvent, endTime: e.target.value })}
-                              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Location</label>
-                            <input
-                              type="text"
-                              value={editingEvent.location}
-                              onChange={(e) => setEditingEvent({ ...editingEvent, location: e.target.value })}
-                              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                              required
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
-                            <textarea
-                              rows={4}
-                              value={editingEvent.aboutEvent || ''}
-                              onChange={(e) => setEditingEvent({ ...editingEvent, aboutEvent: e.target.value })}
-                              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Organizer</label>
-                            <input
-                              type="text"
-                              value={editingEvent.organizer || ''}
-                              onChange={(e) => setEditingEvent({ ...editingEvent, organizer: e.target.value })}
-                              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            />
-                          </div>
-
-                          {/* Existing Photos Management */}
-                          {existingPhotoUrls.length > 0 && (
-                            <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Current Photos ({existingPhotoUrls.length})
-                              </label>
-                              <div className="space-y-3">
-                                {existingPhotoUrls.map((url, index) => (
-                                  <div key={index} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-                                    <img 
-                                      src={url} 
-                                      alt={`Photo ${index + 1}`}
-                                      className="w-16 h-16 object-cover rounded-lg"
-                                      onError={(e) => {
-                                        console.error('Failed to load existing photo:', url);
-                                        e.currentTarget.style.display = 'none';
-                                      }}
-                                    />
-                                    <div className="flex-1">
-                                      <p className="text-sm font-medium text-gray-900">Photo {index + 1}</p>
-                                    </div>
-                                    <button
-                                      type="button"
-                                      onClick={() => {
-                                        setPhotosToDelete([...photosToDelete, url]);
-                                        setExistingPhotoUrls(existingPhotoUrls.filter(u => u !== url));
-                                      }}
-                                      className="text-red-600 hover:text-red-800"
-                                    >
-                                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                      </svg>
-                                    </button>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-
-                          {/* New Photos Upload */}
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                              Add New Photos (Up to 3)
-                            </label>
-                            <div className="space-y-4">
-                              {[1, 2, 3].map((index) => (
-                                <div key={index}>
-                                  {editingPhotos[index - 1] ? (
-                                    <div className="border-2 border-gray-300 rounded-xl p-4">
-                                      <div className="flex items-center space-x-4">
-                                        <img 
-                                          src={URL.createObjectURL(editingPhotos[index - 1] as File)} 
-                                          alt={`New Photo ${index}`}
-                                          className="w-16 h-16 object-cover rounded-lg"
-                                        />
-                                        <div className="flex-1">
-                                          <p className="text-sm font-medium text-gray-900">{editingPhotos[index - 1]?.name}</p>
-                                          <p className="text-xs text-gray-500">{editingPhotos[index - 1] ? (editingPhotos[index - 1]!.size / 1024 / 1024).toFixed(2) : '0'} MB</p>
-                                        </div>
-                                        <button
-                                          type="button"
-                                          onClick={() => {
-                                            const newPhotos = [...editingPhotos];
-                                            newPhotos[index - 1] = null;
-                                            setEditingPhotos(newPhotos);
-                                          }}
-                                          className="text-red-600 hover:text-red-800"
-                                        >
-                                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                          </svg>
-                                        </button>
-                                      </div>
-                                    </div>
-                                  ) : (
-                                    <div 
-                                      className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-blue-400 transition-colors cursor-pointer"
-                                      onClick={() => document.getElementById(`edit-photo-${index}`)?.click()}
-                                    >
-                                      <svg className="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
-                                        <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
-                                      </svg>
-                                      <p className="mt-2 text-sm text-gray-600">Upload new photo {index}</p>
-                                      <p className="text-xs text-gray-500">PNG, JPG, GIF up to 8MB</p>
-                                      <input
-                                        id={`edit-photo-${index}`}
-                                        type="file"
-                                        accept="image/*"
-                                        className="hidden"
-                                        onChange={(e) => handleEditPhotoUpload(e, index - 1)}
-                                      />
-                                    </div>
-                                  )}
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-
-                          {/* Existing Attachments Management */}
-                          {existingAttachmentUrls.length > 0 && (
-                            <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Current Attachments ({existingAttachmentUrls.length})
-                              </label>
-                              <div className="space-y-3">
-                                {existingAttachmentUrls.map((url, index) => (
-                                  <div key={index} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-                                    <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                    </svg>
-                                    <div className="flex-1">
-                                      <p className="text-sm font-medium text-gray-900">Document {index + 1}</p>
-                                    </div>
-                                    <button
-                                      type="button"
-                                      onClick={() => {
-                                        setAttachmentsToDelete([...attachmentsToDelete, url]);
-                                        setExistingAttachmentUrls(existingAttachmentUrls.filter(u => u !== url));
-                                      }}
-                                      className="text-red-600 hover:text-red-800"
-                                    >
-                                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                      </svg>
-                                    </button>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-
-                          {/* New Attachments Upload */}
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                              Add New Attachments
-                            </label>
-                            {editingAttachments.length > 0 && (
-                              <div className="mb-4 space-y-2">
-                                {editingAttachments.map((file, index) => (
-                                  <div key={index} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-                                    <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                    </svg>
-                                    <div className="flex-1">
-                                      <p className="text-sm font-medium text-gray-900">{file.name}</p>
-                                      <p className="text-xs text-gray-500">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
-                                    </div>
-                                    <button
-                                      type="button"
-                                      onClick={() => removeEditAttachment(index)}
-                                      className="text-red-600 hover:text-red-800"
-                                    >
-                                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                      </svg>
-                                    </button>
-                                  </div>
-                                ))}
-                              </div>
-                            )}
-                            <div 
-                              className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-blue-400 transition-colors cursor-pointer"
-                              onClick={() => document.getElementById('edit-attachments')?.click()}
-                            >
-                              <svg className="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
-                                <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
-                              </svg>
-                              <p className="mt-2 text-sm text-gray-600">Upload PDF agenda or other documents</p>
-                              <p className="text-xs text-gray-500">PDF, DOC, DOCX up to 10MB</p>
-                              <input
-                                id="edit-attachments"
-                                type="file"
-                                accept=".pdf,.doc,.docx"
-                                multiple
-                                className="hidden"
-                                onChange={handleEditAttachmentUpload}
-                              />
-                            </div>
-                          </div>
-
-                          <div className="flex space-x-4 pt-4">
-                            <button
-                              type="submit"
-                              className="flex-1 bg-[#C62828] text-white px-6 py-3 rounded-xl font-medium hover:bg-[#B71C1C] transition-colors"
-                            >
-                              Save Changes
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => setEditingEvent(null)}
-                              className="flex-1 bg-gray-100 text-gray-700 px-6 py-3 rounded-xl font-medium hover:bg-gray-200 transition-colors"
-                            >
-                              Cancel
-                            </button>
-                          </div>
-                        </form>
-                      </div>
-                    ) : (
-                      <div className="p-8">
-                        <div className="flex justify-between items-start mb-4">
-                          <h3 className="text-2xl font-bold text-gray-900">{event.title}</h3>
-                          <div className="flex gap-3 mt-6">
-                            <Link
-                              href={`/events/${event.id}`}
-                              className="rounded-full px-6 py-2 font-semibold text-[#C62828] bg-white border border-[#C62828] shadow-sm hover:bg-[#FDEAEA] hover:text-[#B71C1C] transition-all duration-150 text-base focus:outline-none focus:ring-2 focus:ring-[#C62828] focus:ring-offset-2"
-                            >
-                              View Details
-                            </Link>
-                            <button
-                              onClick={() => downloadICal(event)}
-                              className="rounded-full px-6 py-2 font-semibold text-[#C62828] bg-white border border-[#C62828] shadow-sm hover:bg-[#FDEAEA] hover:text-[#B71C1C] transition-all duration-150 text-base focus:outline-none focus:ring-2 focus:ring-[#C62828] focus:ring-offset-2"
-                              title="Add to Calendar"
-                            >
-                              Add to Calendar
-                            </button>
-                            {isAuthenticated && (
-                              <>
-                                <button
-                                  onClick={() => startEditingEvent(event)}
-                                  className="rounded-full px-6 py-2 font-semibold text-[#C62828] bg-white border border-[#C62828] shadow-sm hover:bg-[#FDEAEA] hover:text-[#B71C1C] transition-all duration-150 text-base focus:outline-none focus:ring-2 focus:ring-[#C62828] focus:ring-offset-2"
-                                >
-                                  Edit
-                                </button>
-                                <button
-                                  onClick={() => handleDeleteEvent(event.id)}
-                                  className="rounded-full px-6 py-2 font-semibold text-[#C62828] bg-white border border-[#C62828] shadow-sm hover:bg-[#FDEAEA] hover:text-[#B71C1C] transition-all duration-150 text-base focus:outline-none focus:ring-2 focus:ring-[#C62828] focus:ring-offset-2"
-                                >
-                                  Delete
-                                </button>
-                              </>
-                            )}
-                          </div>
+                        </>
+                      )}
+                    </div>
+                    <div className="event-info flex-1 flex flex-col">
+                      <h3>{event.title}</h3>
+                      <div className="space-y-2 mb-3">
+                        <div className="flex items-center text-gray-600 text-sm">
+                          <svg className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                          </svg>
+                          <span>{event.location}</span>
                         </div>
-                        
-                        {/* Event Photo */}
-                        {event.photoUrls && event.photoUrls.length > 0 && (
-                          <div className="mb-4">
-                            <img
-                              src={cleanPhotoUrls(event.photoUrls || [])[0]}
-                              alt={event.title}
-                              className="w-full h-48 object-cover rounded-xl shadow-md"
-                              onError={(e) => {
-                                console.error('Failed to load event card image:', cleanPhotoUrls(event.photoUrls || [])?.[0]);
-                                e.currentTarget.style.display = 'none';
-                              }}
-                            />
-                          </div>
-                        )}
-                        
-                        <div className="space-y-4">
-                          <div className="flex items-center text-gray-600">
-                            <svg className="h-5 w-5 mr-3 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        {event.organizer && (
+                          <div className="flex items-center text-gray-600 text-sm">
+                            <svg className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                             </svg>
-                            <span className="font-medium">
-                              {new Date(event.date).toLocaleDateString('en-US', { 
-                                weekday: 'long', 
-                                year: 'numeric', 
-                                month: 'long', 
-                                day: 'numeric' 
-                              })}
-                              {event.endDate && event.endDate !== event.date && (
-                                ` - ${new Date(event.endDate).toLocaleDateString('en-US', { 
-                                  month: 'long', 
-                                  day: 'numeric',
-                                  year: 'numeric' 
-                                })}`
-                              )}
-                              {event.startTime && ` at ${event.startTime}`}
-                              {event.endTime && ` - ${event.endTime}`}
-                            </span>
-                          </div>
-                          
-                          <div className="flex items-center text-gray-600">
-                            <svg className="h-5 w-5 mr-3 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                            </svg>
-                            <span className="font-medium">{event.location}</span>
-                          </div>
-                          
-                          {event.organizer && (
-                            <div className="flex items-center text-gray-600">
-                              <svg className="h-5 w-5 mr-3 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                              </svg>
-                              <span className="font-medium">Organized by {event.organizer}</span>
-                            </div>
-                          )}
-                          
-                          {event.contactDetails && (
-                            <div className="flex items-center text-gray-600">
-                              <svg className="h-5 w-5 mr-3 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                              </svg>
-                              <a 
-                                href={`mailto:${event.contactDetails}`}
-                                className="font-medium text-[#C62828] hover:text-[#B71C1C] transition-colors"
-                              >
-                                {event.contactDetails}
-                              </a>
-                            </div>
-                          )}
-                          
-                          {event.aboutEvent && (
-                            <div className="pt-4 border-t border-gray-100">
-                              <p className="text-gray-600 text-sm leading-relaxed line-clamp-3">
-                                {event.aboutEvent}
-                              </p>
-                            </div>
-                          )}
-                        </div>
-                        
-                        {event.attachmentUrls && event.attachmentUrls.length > 0 && (
-                          <div className="mt-2">
-                            {cleanPhotoUrls(event.attachmentUrls || []).map((url, idx) => (
-                              <a
-                                key={idx}
-                                href={url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="inline-block text-[#C62828] hover:text-[#B71C1C] text-xs mr-2"
-                                download
-                              >
-                                Attachment {idx + 1}
-                              </a>
-                            ))}
+                            <span>{event.organizer}</span>
                           </div>
                         )}
                       </div>
-                    )}
+                      {event.aboutEvent && (
+                        <p className="text-gray-700 text-sm mb-3">{event.aboutEvent}</p>
+                      )}
+                      <div className="flex flex-wrap gap-2 mt-auto">
+                        <Link
+                          href={`/events/${event.id}`}
+                          className="event-link"
+                        >
+                          View Details
+                        </Link>
+                        <button
+                          onClick={() => downloadICal(event)}
+                          className="event-link"
+                        >
+                          Add to Calendar
+                        </button>
+                        {isAuthenticated && (
+                          <>
+                            <button
+                              onClick={() => startEditingEvent(event)}
+                              className="event-link"
+                            >
+                              Edit
+                            </button>
+                            <button
+                              onClick={() => handleDeleteEvent(event.id)}
+                              className="event-link"
+                            >
+                              Delete
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 ))}
+              </div>
+            )}
+
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <div className="flex justify-center items-center gap-2 mt-8">
+                <button
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  className={`event-link px-4 py-2 ${currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                >
+                  Previous
+                </button>
+                {[...Array(totalPages)].map((_, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setCurrentPage(idx + 1)}
+                    className={`event-link px-4 py-2 ${currentPage === idx + 1 ? 'bg-[#B71C1C] text-white' : ''}`}
+                  >
+                    {idx + 1}
+                  </button>
+                ))}
+                <button
+                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                  className={`event-link px-4 py-2 ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : ''}`}
+                >
+                  Next
+                </button>
               </div>
             )}
           </div>

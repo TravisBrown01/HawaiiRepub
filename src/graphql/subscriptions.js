@@ -15,8 +15,7 @@ export const onCreateEvent = /* GraphQL */ `
       details
       organizer
       contactDetails
-      photoUrls
-      attachmentUrls
+      hostingOrganization
       owner
       createdAt
       updatedAt
@@ -38,8 +37,7 @@ export const onUpdateEvent = /* GraphQL */ `
       details
       organizer
       contactDetails
-      photoUrls
-      attachmentUrls
+      hostingOrganization
       owner
       createdAt
       updatedAt
@@ -61,8 +59,7 @@ export const onDeleteEvent = /* GraphQL */ `
       details
       organizer
       contactDetails
-      photoUrls
-      attachmentUrls
+      hostingOrganization
       owner
       createdAt
       updatedAt

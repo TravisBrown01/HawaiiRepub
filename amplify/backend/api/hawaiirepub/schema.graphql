@@ -13,7 +13,6 @@ type Event @model @auth(rules: [
   details: String
   organizer: String
   contactDetails: String
-  photoUrls: [String]
-  attachmentUrls: [String]
+  hostingOrganization: String
   owner: String
 } 
