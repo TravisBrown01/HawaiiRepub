@@ -6,6 +6,7 @@ import { getEvent } from '../../../src/graphql/queries';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import Header from '../../components/Header';
+import { FormattedContent } from '../../components/FormattedContent';
 import { isValidS3Url } from '../../utils/s3Upload';
 import { useAmplifyClient } from '../../hooks/useAmplifyClient';
 
@@ -377,21 +378,21 @@ function EventDetailPage() {
                     {event.aboutEvent && (
                       <div className="mb-6">
                         <h3 className="text-lg font-semibold text-gray-900 mb-3">About This Event</h3>
-                        <p className="text-gray-700 leading-relaxed">{event.aboutEvent}</p>
+                        <FormattedContent content={event.aboutEvent} />
                       </div>
                     )}
                     
                     {event.hostingOrganization && (
                       <div className="mb-6">
                         <h3 className="text-lg font-semibold text-gray-900 mb-3">Hosting Organization</h3>
-                        <p className="text-gray-700 leading-relaxed">{event.hostingOrganization}</p>
+                        <FormattedContent content={event.hostingOrganization} />
                       </div>
                     )}
                     
                     {event.details && (
                       <div className="mb-6">
                         <h3 className="text-lg font-semibold text-gray-900 mb-3">Additional Information</h3>
-                        <p className="text-gray-700 leading-relaxed">{event.details}</p>
+                        <FormattedContent content={event.details} />
                       </div>
                     )}
                     
