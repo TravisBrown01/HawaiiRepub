@@ -1,0 +1,16 @@
+{
+  "resourceName": "s3daaec405",
+  "policyUUID": "daaec405",
+  "bucketName": "hrp2b6ffb3229894d9ab85e015e2b161bd0",
+  "storageAccess": "authAndGuest",
+  "guestAccess": [
+    "READ"
+  ],
+  "authAccess": [
+    "CREATE_AND_UPDATE",
+    "READ",
+    "DELETE"
+  ],
+  "triggerFunction": "S3Trigger19a749dd",
+  "groupAccess": {}
+}

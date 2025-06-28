@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { generateClient } from 'aws-amplify/api';
 import { createEvent, updateEvent, deleteEvent } from '../../src/graphql/mutations';
 import { listEvents } from '../../src/graphql/queries';
-import { signOut, signIn, signUp, confirmSignUp, getCurrentUser, fetchAuthSession } from 'aws-amplify/auth';
+import { signOut, signIn, signUp, confirmSignUp, getCurrentUser, fetchAuthSession, resetPassword, confirmResetPassword } from 'aws-amplify/auth';
 import { withAuthenticator } from '@aws-amplify/ui-react';
 import '@aws-amplify/ui-react/styles.css';
 import Link from 'next/link';
@@ -51,17 +51,19 @@ function EventsPage() {
   // Authentication states
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [showAuth, setShowAuth] = useState(false);
-  const [authMode, setAuthMode] = useState<'signIn' | 'signUp' | 'confirm'>('signIn');
+  const [authMode, setAuthMode] = useState<'signIn' | 'signUp' | 'confirm' | 'forgotPassword' | 'confirmReset'>('signIn');
   const [authForm, setAuthForm] = useState({
     username: '',
     email: '',
     password: '',
     confirmPassword: '',
-    confirmationCode: ''
+    confirmationCode: '',
+    newPassword: ''
   });
   const [authError, setAuthError] = useState<string | null>(null);
   const [authLoading, setAuthLoading] = useState(false);
   const [authChecking, setAuthChecking] = useState(true);
+  const [authSuccess, setAuthSuccess] = useState<string | null>(null);
   
   // Filter and sorting states
   const [showPastEvents, setShowPastEvents] = useState(false);
@@ -165,7 +167,7 @@ function EventsPage() {
       await signIn({ username: authForm.username, password: authForm.password });
       setIsAuthenticated(true);
       setShowAuth(false);
-      setAuthForm({ username: '', email: '', password: '', confirmPassword: '', confirmationCode: '' });
+      setAuthForm({ username: '', email: '', password: '', confirmPassword: '', confirmationCode: '', newPassword: '' });
     } catch (error: any) {
       console.error('Sign in error:', error);
       
@@ -266,6 +268,76 @@ function EventsPage() {
         setAuthError('Too many attempts. Please wait a moment before trying again.');
       } else {
         setAuthError('Failed to verify account. Please try again.');
+      }
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAuthLoading(true);
+    setAuthError(null);
+    setAuthSuccess(null);
+    
+    try {
+      await resetPassword({ username: authForm.username });
+      setAuthMode('confirmReset');
+      setAuthSuccess('Password reset code sent to your email. Please check your inbox.');
+    } catch (error: any) {
+      console.error('Forgot password error:', error);
+      
+      if (error.name === 'UserNotFoundException') {
+        setAuthError('User not found. Please check your username.');
+      } else if (error.name === 'TooManyRequestsException') {
+        setAuthError('Too many attempts. Please wait a moment before trying again.');
+      } else if (error.name === 'LimitExceededException') {
+        setAuthError('Too many password reset attempts. Please try again later.');
+      } else {
+        setAuthError('Failed to send reset code. Please try again.');
+      }
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  const handleConfirmResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (authForm.newPassword !== authForm.confirmPassword) {
+      setAuthError('Passwords do not match');
+      return;
+    }
+    
+    if (authForm.newPassword.length < 8) {
+      setAuthError('Password must be at least 8 characters long');
+      return;
+    }
+    
+    setAuthLoading(true);
+    setAuthError(null);
+    
+    try {
+      await confirmResetPassword({
+        username: authForm.username,
+        confirmationCode: authForm.confirmationCode,
+        newPassword: authForm.newPassword
+      });
+      setAuthMode('signIn');
+      setAuthForm({ ...authForm, confirmationCode: '', newPassword: '', confirmPassword: '' });
+      setAuthSuccess('Password reset successful! You can now sign in with your new password.');
+    } catch (error: any) {
+      console.error('Confirm reset password error:', error);
+      
+      if (error.name === 'CodeMismatchException') {
+        setAuthError('Invalid reset code. Please check your email and try again.');
+      } else if (error.name === 'ExpiredCodeException') {
+        setAuthError('Reset code has expired. Please request a new code.');
+      } else if (error.name === 'InvalidPasswordException') {
+        setAuthError('Password does not meet requirements. Please use at least 8 characters.');
+      } else if (error.name === 'TooManyRequestsException') {
+        setAuthError('Too many attempts. Please wait a moment before trying again.');
+      } else {
+        setAuthError('Failed to reset password. Please try again.');
       }
     } finally {
       setAuthLoading(false);
@@ -760,6 +832,17 @@ function EventsPage() {
               </div>
             )}
 
+            {authSuccess && (
+              <div className="bg-green-50 border border-green-200 rounded-xl p-4 mb-6">
+                <div className="flex items-center">
+                  <svg className="h-5 w-5 text-green-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" clipRule="evenodd" />
+                  </svg>
+                  <span className="text-sm text-green-700">{authSuccess}</span>
+                </div>
+              </div>
+            )}
+
             {authMode === 'signIn' && (
               <form onSubmit={handleSignIn} className="space-y-6">
                 <div>
@@ -795,10 +878,123 @@ function EventsPage() {
                 >
                   {authLoading ? 'Signing In...' : 'Sign In'}
                 </button>
-                <div className="text-center">
+                <div className="text-center space-y-2">
+                  <button
+                    type="button"
+                    onClick={() => setAuthMode('forgotPassword')}
+                    className="text-sm text-[#C62828] hover:text-[#B71C1C] transition-colors"
+                  >
+                    Forgot Password?
+                  </button>
                   <p className="text-sm text-gray-500">
                     Contact the administrator to create an account
                   </p>
+                </div>
+              </form>
+            )}
+
+            {authMode === 'forgotPassword' && (
+              <form onSubmit={handleForgotPassword} className="space-y-6">
+                <div>
+                  <label htmlFor="forgot-username" className="block text-sm font-medium text-gray-700 mb-2">
+                    Username
+                  </label>
+                  <input
+                    id="forgot-username"
+                    type="text"
+                    value={authForm.username}
+                    onChange={(e) => setAuthForm({ ...authForm, username: e.target.value })}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#C62828] focus:border-transparent transition-all duration-200"
+                    required
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={authLoading}
+                  className="w-full bg-[#C62828] text-white px-6 py-3 rounded-xl font-medium hover:bg-[#B71C1C] transition-colors duration-200 shadow-sm disabled:opacity-50"
+                >
+                  {authLoading ? 'Sending Reset Code...' : 'Send Reset Code'}
+                </button>
+                <div className="text-center">
+                  <button
+                    type="button"
+                    onClick={() => setAuthMode('signIn')}
+                    className="text-sm text-[#C62828] hover:text-[#B71C1C] transition-colors"
+                  >
+                    Back to Sign In
+                  </button>
+                </div>
+              </form>
+            )}
+
+            {authMode === 'confirmReset' && (
+              <form onSubmit={handleConfirmResetPassword} className="space-y-6">
+                <div>
+                  <label htmlFor="reset-code" className="block text-sm font-medium text-gray-700 mb-2">
+                    Reset Code
+                  </label>
+                  <input
+                    id="reset-code"
+                    type="text"
+                    placeholder="Enter the code from your email"
+                    value={authForm.confirmationCode}
+                    onChange={(e) => setAuthForm({ ...authForm, confirmationCode: e.target.value })}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#C62828] focus:border-transparent transition-all duration-200"
+                    required
+                  />
+                </div>
+                <div>
+                  <label htmlFor="new-password" className="block text-sm font-medium text-gray-700 mb-2">
+                    New Password
+                  </label>
+                  <input
+                    id="new-password"
+                    type="password"
+                    placeholder="Enter your new password"
+                    value={authForm.newPassword}
+                    onChange={(e) => setAuthForm({ ...authForm, newPassword: e.target.value })}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#C62828] focus:border-transparent transition-all duration-200"
+                    required
+                  />
+                </div>
+                <div>
+                  <label htmlFor="confirm-new-password" className="block text-sm font-medium text-gray-700 mb-2">
+                    Confirm New Password
+                  </label>
+                  <input
+                    id="confirm-new-password"
+                    type="password"
+                    placeholder="Confirm your new password"
+                    value={authForm.confirmPassword}
+                    onChange={(e) => setAuthForm({ ...authForm, confirmPassword: e.target.value })}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#C62828] focus:border-transparent transition-all duration-200"
+                    required
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={authLoading}
+                  className="w-full bg-[#C62828] text-white px-6 py-3 rounded-xl font-medium hover:bg-[#B71C1C] transition-colors duration-200 shadow-sm disabled:opacity-50"
+                >
+                  {authLoading ? 'Resetting Password...' : 'Reset Password'}
+                </button>
+                <div className="text-center space-y-2">
+                  <button
+                    type="button"
+                    onClick={() => setAuthMode('forgotPassword')}
+                    className="text-sm text-[#C62828] hover:text-[#B71C1C] transition-colors"
+                  >
+                    Resend Code
+                  </button>
+                  <div>
+                    <button
+                      type="button"
+                      onClick={() => setAuthMode('signIn')}
+                      className="text-sm text-[#C62828] hover:text-[#B71C1C] transition-colors"
+                    >
+                      Back to Sign In
+                    </button>
+                  </div>
                 </div>
               </form>
             )}
