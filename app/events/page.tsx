@@ -76,10 +76,12 @@ function EventsPage() {
 
   useEffect(() => {
     checkAuthStatus();
+    fetchEvents(); // Fetch events immediately for public viewing
   }, []);
 
   useEffect(() => {
     if (isAuthenticated && !authChecking) {
+      // Only refetch if user becomes authenticated (for admin features)
       fetchEvents();
     }
   }, [isAuthenticated, authChecking]);
@@ -100,12 +102,12 @@ function EventsPage() {
         setShowAuth(false);
       } else {
         setIsAuthenticated(false);
-        setShowAuth(true);
+        setShowAuth(false); // Don't show auth form by default
       }
     } catch (error) {
       console.log('Auth check failed:', error);
       setIsAuthenticated(false);
-      setShowAuth(true);
+      setShowAuth(false); // Don't show auth form by default
     } finally {
       setAuthChecking(false);
     }
@@ -216,7 +218,8 @@ function EventsPage() {
       console.log('Fetching events...');
       
       const result = await client.graphql({
-        query: listEvents
+        query: listEvents,
+        authMode: 'apiKey' // Use API key for public read access
       });
       
       console.log('Events result:', result);
@@ -268,17 +271,23 @@ function EventsPage() {
       }
       // Format the event data
       const formattedEvent = {
-        ...newEvent,
+        title: newEvent.title,
         date: formattedDate,
         endDate: formattedEndDate,
         startTime: newEvent.startTime || null,
         endTime: newEvent.endTime || null,
+        location: newEvent.location,
+        aboutEvent: newEvent.aboutEvent || null,
+        details: newEvent.details || null,
+        organizer: newEvent.organizer || null,
+        contactDetails: newEvent.contactDetails || null,
         photoUrls,
         attachmentUrls
       };
       await client.graphql({
         query: createEvent,
-        variables: { input: formattedEvent }
+        variables: { input: formattedEvent },
+        authMode: 'userPool' // Use Cognito for authenticated operations
       });
       setNewEvent({ title: '', date: '', endDate: '', startTime: '', endTime: '', location: '', aboutEvent: '', details: '', organizer: '', contactDetails: '' });
       setPhotos([null, null, null]);
@@ -292,6 +301,10 @@ function EventsPage() {
   };
 
   const startEditingEvent = (event: Event) => {
+    if (!isAuthenticated) {
+      setShowAuth(true);
+      return;
+    }
     setEditingEvent(event);
     setExistingPhotoUrls(event.photoUrls || []);
     setExistingAttachmentUrls(event.attachmentUrls || []);
@@ -347,11 +360,17 @@ function EventsPage() {
       
       // Format the event data
       const formattedEvent = {
-        ...editingEvent,
+        id: editingEvent.id,
+        title: editingEvent.title,
         date: formattedDate,
         endDate: formattedEndDate,
         startTime: editingEvent.startTime || null,
         endTime: editingEvent.endTime || null,
+        location: editingEvent.location,
+        aboutEvent: editingEvent.aboutEvent || null,
+        details: editingEvent.details || null,
+        organizer: editingEvent.organizer || null,
+        contactDetails: editingEvent.contactDetails || null,
         photoUrls: finalPhotoUrls,
         attachmentUrls: finalAttachmentUrls
       };
@@ -360,7 +379,8 @@ function EventsPage() {
       
       await client.graphql({
         query: updateEvent,
-        variables: { input: formattedEvent }
+        variables: { input: formattedEvent },
+        authMode: 'userPool' // Use Cognito for authenticated operations
       });
       
       setEditingEvent(null);
@@ -378,6 +398,11 @@ function EventsPage() {
   };
 
   const handleDeleteEvent = async (id: string) => {
+    if (!isAuthenticated) {
+      setShowAuth(true);
+      return;
+    }
+    
     if (!confirm('Are you sure you want to delete this event?')) return;
     
     try {
@@ -399,7 +424,8 @@ function EventsPage() {
       
       await client.graphql({
         query: deleteEvent,
-        variables: { input: { id } }
+        variables: { input: { id } },
+        authMode: 'userPool' // Use Cognito for authenticated operations
       });
       
       fetchEvents();
@@ -648,8 +674,8 @@ function EventsPage() {
     URL.revokeObjectURL(url);
   };
 
-  // Show loading while checking authentication
-  if (authChecking) {
+  // Show loading only briefly while checking auth, then show events
+  if (authChecking && loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
         <div className="text-center">
@@ -658,7 +684,7 @@ function EventsPage() {
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
-            Checking authentication...
+            Loading events...
           </div>
         </div>
       </div>
@@ -949,199 +975,273 @@ function EventsPage() {
 
       {/* Create Event Form */}
       {showCreateForm && (
-        <section className="py-12">
+        <section className="py-12 bg-gray-50">
           <div className="container mx-auto px-4">
-            <div className="max-w-2xl mx-auto">
+            <div className="max-w-4xl mx-auto">
               <div className="bg-white rounded-3xl shadow-xl p-8 border border-gray-100">
-                <h2 className="text-2xl font-semibold text-gray-900 mb-6">Create New Event</h2>
-                <form onSubmit={handleCreateEvent} className="space-y-6">
-                  <div>
-                    <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
-                      Event Title
-                    </label>
-                    <input
-                      id="title"
-                      type="text"
-                      placeholder="Enter event title"
-                      value={newEvent.title}
-                      onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                      required
-                    />
+                {!isAuthenticated ? (
+                  <div className="text-center py-12">
+                    <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                    <h3 className="mt-2 text-sm font-medium text-gray-900">Authentication Required</h3>
+                    <p className="mt-1 text-sm text-gray-500">You need to sign in to create events.</p>
+                    <div className="mt-6">
+                      <button
+                        onClick={() => setShowAuth(true)}
+                        className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-xl text-white bg-[#C62828] hover:bg-[#B71C1C] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#C62828]"
+                      >
+                        Sign In
+                      </button>
+                      <button
+                        onClick={() => setShowCreateForm(false)}
+                        className="ml-3 inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-xl text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#C62828]"
+                      >
+                        Cancel
+                      </button>
+                    </div>
                   </div>
-                  
-                  <div>
-                    <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-2">
-                      Date
-                    </label>
-                    <input
-                      id="date"
-                      type="text"
-                      placeholder="MM/DD/YYYY (e.g., 12/25/2024)"
-                      value={newEvent.date}
-                      onChange={(e) => {
-                        // Temporarily disable auto-formatting for debugging
-                        setNewEvent({ ...newEvent, date: e.target.value });
-                      }}
-                      onBlur={(e) => {
-                        if (e.target.value && !validateAndFormatDate(e.target.value)) {
-                          setError('Please enter a valid date in MM/DD/YYYY format');
-                        }
-                      }}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                      required
-                    />
-                  </div>
-                  
-                  <div>
-                    <label htmlFor="endDate" className="block text-sm font-medium text-gray-700 mb-2">
-                      End Date (Optional)
-                    </label>
-                    <input
-                      id="endDate"
-                      type="text"
-                      placeholder="MM/DD/YYYY (e.g., 12/26/2024)"
-                      value={newEvent.endDate}
-                      onChange={(e) => {
-                        const formatted = formatDateInput(e.target.value);
-                        setNewEvent({ ...newEvent, endDate: formatted });
-                      }}
-                      onBlur={(e) => {
-                        if (e.target.value && !validateAndFormatDate(e.target.value)) {
-                          setError('Please enter a valid date in MM/DD/YYYY format');
-                        }
-                      }}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label htmlFor="startTime" className="block text-sm font-medium text-gray-700 mb-2">
-                      Start Time (Optional)
-                    </label>
-                    <input
-                      id="startTime"
-                      type="text"
-                      placeholder="HH:MM AM/PM (e.g., 2:30 PM)"
-                      value={newEvent.startTime}
-                      onChange={(e) => {
-                        const formatted = formatTimeInput(e.target.value);
-                        setNewEvent({ ...newEvent, startTime: formatted });
-                      }}
-                      onBlur={(e) => {
-                        if (e.target.value && !validateTime(e.target.value)) {
-                          setError('Please enter a valid time in HH:MM AM/PM format');
-                        }
-                      }}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label htmlFor="endTime" className="block text-sm font-medium text-gray-700 mb-2">
-                      End Time (Optional)
-                    </label>
-                    <input
-                      id="endTime"
-                      type="text"
-                      placeholder="HH:MM AM/PM (e.g., 4:00 PM)"
-                      value={newEvent.endTime}
-                      onChange={(e) => {
-                        const formatted = formatTimeInput(e.target.value);
-                        setNewEvent({ ...newEvent, endTime: formatted });
-                      }}
-                      onBlur={(e) => {
-                        if (e.target.value && !validateTime(e.target.value)) {
-                          setError('Please enter a valid time in HH:MM AM/PM format');
-                        }
-                      }}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-2">
-                      Location
-                    </label>
-                    <input
-                      id="location"
-                      type="text"
-                      placeholder="Enter event location"
-                      value={newEvent.location}
-                      onChange={(e) => setNewEvent({ ...newEvent, location: e.target.value })}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                      required
-                    />
-                  </div>
-                  
-                  <div>
-                    <label htmlFor="aboutEvent" className="block text-sm font-medium text-gray-700 mb-2">
-                      About Event (Optional)
-                    </label>
-                    <textarea
-                      id="aboutEvent"
-                      rows={4}
-                      placeholder="Enter event description..."
-                      value={newEvent.aboutEvent}
-                      onChange={(e) => setNewEvent({ ...newEvent, aboutEvent: e.target.value })}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label htmlFor="contactDetails" className="block text-sm font-medium text-gray-700 mb-2">
-                      Contact Email (Optional)
-                    </label>
-                    <input
-                      id="contactDetails"
-                      type="email"
-                      placeholder="organizer@example.com"
-                      value={newEvent.contactDetails}
-                      onChange={(e) => setNewEvent({ ...newEvent, contactDetails: e.target.value })}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label htmlFor="details" className="block text-sm font-medium text-gray-700 mb-2">
-                      Event Details/Agenda (Optional)
-                    </label>
-                    <textarea
-                      id="details"
-                      rows={6}
-                      placeholder="Enter event details, agenda, or additional information..."
-                      value={newEvent.details}
-                      onChange={(e) => setNewEvent({ ...newEvent, details: e.target.value })}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Photos (Optional - Up to 3)
-                    </label>
-                    <div className="space-y-4">
-                      {[1, 2, 3].map((index) => (
-                        <div key={index}>
-                          {photos[index - 1] ? (
-                            <div className="border-2 border-gray-300 rounded-xl p-4">
-                              <div className="flex items-center space-x-4">
-                                <img 
-                                  src={URL.createObjectURL(photos[index - 1] as File)} 
-                                  alt={`Photo ${index}`}
-                                  className="w-16 h-16 object-cover rounded-lg"
-                                />
+                ) : (
+                  <>
+                    <h2 className="text-2xl font-bold text-gray-900 mb-6">Create New Event</h2>
+                    <form onSubmit={handleCreateEvent} className="space-y-6">
+                      <div>
+                        <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
+                          Event Title
+                        </label>
+                        <input
+                          id="title"
+                          type="text"
+                          placeholder="Enter event title"
+                          value={newEvent.title}
+                          onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                          required
+                        />
+                      </div>
+                      
+                      <div>
+                        <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-2">
+                          Date
+                        </label>
+                        <input
+                          id="date"
+                          type="text"
+                          placeholder="MM/DD/YYYY (e.g., 12/25/2024)"
+                          value={newEvent.date}
+                          onChange={(e) => {
+                            // Temporarily disable auto-formatting for debugging
+                            setNewEvent({ ...newEvent, date: e.target.value });
+                          }}
+                          onBlur={(e) => {
+                            if (e.target.value && !validateAndFormatDate(e.target.value)) {
+                              setError('Please enter a valid date in MM/DD/YYYY format');
+                            }
+                          }}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                          required
+                        />
+                      </div>
+                      
+                      <div>
+                        <label htmlFor="endDate" className="block text-sm font-medium text-gray-700 mb-2">
+                          End Date (Optional)
+                        </label>
+                        <input
+                          id="endDate"
+                          type="text"
+                          placeholder="MM/DD/YYYY (e.g., 12/26/2024)"
+                          value={newEvent.endDate}
+                          onChange={(e) => {
+                            const formatted = formatDateInput(e.target.value);
+                            setNewEvent({ ...newEvent, endDate: formatted });
+                          }}
+                          onBlur={(e) => {
+                            if (e.target.value && !validateAndFormatDate(e.target.value)) {
+                              setError('Please enter a valid date in MM/DD/YYYY format');
+                            }
+                          }}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                        />
+                      </div>
+                      
+                      <div>
+                        <label htmlFor="startTime" className="block text-sm font-medium text-gray-700 mb-2">
+                          Start Time (Optional)
+                        </label>
+                        <input
+                          id="startTime"
+                          type="text"
+                          placeholder="HH:MM AM/PM (e.g., 2:30 PM)"
+                          value={newEvent.startTime}
+                          onChange={(e) => {
+                            const formatted = formatTimeInput(e.target.value);
+                            setNewEvent({ ...newEvent, startTime: formatted });
+                          }}
+                          onBlur={(e) => {
+                            if (e.target.value && !validateTime(e.target.value)) {
+                              setError('Please enter a valid time in HH:MM AM/PM format');
+                            }
+                          }}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                        />
+                      </div>
+                      
+                      <div>
+                        <label htmlFor="endTime" className="block text-sm font-medium text-gray-700 mb-2">
+                          End Time (Optional)
+                        </label>
+                        <input
+                          id="endTime"
+                          type="text"
+                          placeholder="HH:MM AM/PM (e.g., 4:00 PM)"
+                          value={newEvent.endTime}
+                          onChange={(e) => {
+                            const formatted = formatTimeInput(e.target.value);
+                            setNewEvent({ ...newEvent, endTime: formatted });
+                          }}
+                          onBlur={(e) => {
+                            if (e.target.value && !validateTime(e.target.value)) {
+                              setError('Please enter a valid time in HH:MM AM/PM format');
+                            }
+                          }}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                        />
+                      </div>
+                      
+                      <div>
+                        <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-2">
+                          Location
+                        </label>
+                        <input
+                          id="location"
+                          type="text"
+                          placeholder="Enter event location"
+                          value={newEvent.location}
+                          onChange={(e) => setNewEvent({ ...newEvent, location: e.target.value })}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                          required
+                        />
+                      </div>
+                      
+                      <div>
+                        <label htmlFor="aboutEvent" className="block text-sm font-medium text-gray-700 mb-2">
+                          About Event (Optional)
+                        </label>
+                        <textarea
+                          id="aboutEvent"
+                          rows={4}
+                          placeholder="Enter event description..."
+                          value={newEvent.aboutEvent}
+                          onChange={(e) => setNewEvent({ ...newEvent, aboutEvent: e.target.value })}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none"
+                        />
+                      </div>
+                      
+                      <div>
+                        <label htmlFor="contactDetails" className="block text-sm font-medium text-gray-700 mb-2">
+                          Contact Email (Optional)
+                        </label>
+                        <input
+                          id="contactDetails"
+                          type="email"
+                          placeholder="organizer@example.com"
+                          value={newEvent.contactDetails}
+                          onChange={(e) => setNewEvent({ ...newEvent, contactDetails: e.target.value })}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                        />
+                      </div>
+                      
+                      <div>
+                        <label htmlFor="details" className="block text-sm font-medium text-gray-700 mb-2">
+                          Event Details/Agenda (Optional)
+                        </label>
+                        <textarea
+                          id="details"
+                          rows={6}
+                          placeholder="Enter event details, agenda, or additional information..."
+                          value={newEvent.details}
+                          onChange={(e) => setNewEvent({ ...newEvent, details: e.target.value })}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none"
+                        />
+                      </div>
+                      
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Photos (Optional - Up to 3)
+                        </label>
+                        <div className="space-y-4">
+                          {[1, 2, 3].map((index) => (
+                            <div key={index}>
+                              {photos[index - 1] ? (
+                                <div className="border-2 border-gray-300 rounded-xl p-4">
+                                  <div className="flex items-center space-x-4">
+                                    <img 
+                                      src={URL.createObjectURL(photos[index - 1] as File)} 
+                                      alt={`Photo ${index}`}
+                                      className="w-16 h-16 object-cover rounded-lg"
+                                    />
+                                    <div className="flex-1">
+                                      <p className="text-sm font-medium text-gray-900">{photos[index - 1]?.name}</p>
+                                      <p className="text-xs text-gray-500">{photos[index - 1] ? (photos[index - 1]!.size / 1024 / 1024).toFixed(2) : '0'} MB</p>
+                                    </div>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        const newPhotos = [...photos];
+                                        newPhotos[index - 1] = null;
+                                        setPhotos(newPhotos);
+                                      }}
+                                      className="text-red-600 hover:text-red-800"
+                                    >
+                                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                      </svg>
+                                    </button>
+                                  </div>
+                                </div>
+                              ) : (
+                                <div 
+                                  className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-blue-400 transition-colors cursor-pointer"
+                                  onClick={() => document.getElementById(`photo-${index}`)?.click()}
+                                >
+                                  <svg className="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                                    <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+                                  </svg>
+                                  <p className="mt-2 text-sm text-gray-600">Upload photo {index}</p>
+                                  <p className="text-xs text-gray-500">PNG, JPG, GIF up to 8MB</p>
+                                  <input
+                                    id={`photo-${index}`}
+                                    type="file"
+                                    accept="image/*"
+                                    className="hidden"
+                                    onChange={(e) => handlePhotoUpload(e, index - 1)}
+                                  />
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Attachments (Optional)
+                        </label>
+                        {attachments.length > 0 && (
+                          <div className="mb-4 space-y-2">
+                            {attachments.map((file, index) => (
+                              <div key={index} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
                                 <div className="flex-1">
-                                  <p className="text-sm font-medium text-gray-900">{photos[index - 1]?.name}</p>
-                                  <p className="text-xs text-gray-500">{photos[index - 1] ? (photos[index - 1]!.size / 1024 / 1024).toFixed(2) : '0'} MB</p>
+                                  <p className="text-sm font-medium text-gray-900">{file.name}</p>
+                                  <p className="text-xs text-gray-500">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
                                 </div>
                                 <button
                                   type="button"
-                                  onClick={() => {
-                                    const newPhotos = [...photos];
-                                    newPhotos[index - 1] = null;
-                                    setPhotos(newPhotos);
-                                  }}
+                                  onClick={() => removeAttachment(index)}
                                   className="text-red-600 hover:text-red-800"
                                 >
                                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1149,109 +1249,61 @@ function EventsPage() {
                                   </svg>
                                 </button>
                               </div>
-                            </div>
-                          ) : (
-                            <div 
-                              className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-blue-400 transition-colors cursor-pointer"
-                              onClick={() => document.getElementById(`photo-${index}`)?.click()}
-                            >
-                              <svg className="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
-                                <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
-                              </svg>
-                              <p className="mt-2 text-sm text-gray-600">Upload photo {index}</p>
-                              <p className="text-xs text-gray-500">PNG, JPG, GIF up to 8MB</p>
-                              <input
-                                id={`photo-${index}`}
-                                type="file"
-                                accept="image/*"
-                                className="hidden"
-                                onChange={(e) => handlePhotoUpload(e, index - 1)}
-                              />
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Attachments (Optional)
-                    </label>
-                    {attachments.length > 0 && (
-                      <div className="mb-4 space-y-2">
-                        {attachments.map((file, index) => (
-                          <div key={index} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-                            <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                            </svg>
-                            <div className="flex-1">
-                              <p className="text-sm font-medium text-gray-900">{file.name}</p>
-                              <p className="text-xs text-gray-500">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
-                            </div>
-                            <button
-                              type="button"
-                              onClick={() => removeAttachment(index)}
-                              className="text-red-600 hover:text-red-800"
-                            >
-                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                              </svg>
-                            </button>
+                            ))}
                           </div>
-                        ))}
+                        )}
+                        <div 
+                          className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-blue-400 transition-colors cursor-pointer"
+                          onClick={() => document.getElementById('attachments')?.click()}
+                        >
+                          <svg className="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                            <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                          <p className="mt-2 text-sm text-gray-600">Upload PDF agenda or other documents</p>
+                          <p className="text-xs text-gray-500">PDF, DOC, DOCX up to 10MB</p>
+                          <input
+                            id="attachments"
+                            type="file"
+                            accept=".pdf,.doc,.docx"
+                            multiple
+                            className="hidden"
+                            onChange={handleAttachmentUpload}
+                          />
+                        </div>
                       </div>
-                    )}
-                    <div 
-                      className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-blue-400 transition-colors cursor-pointer"
-                      onClick={() => document.getElementById('attachments')?.click()}
-                    >
-                      <svg className="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
-                        <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                      <p className="mt-2 text-sm text-gray-600">Upload PDF agenda or other documents</p>
-                      <p className="text-xs text-gray-500">PDF, DOC, DOCX up to 10MB</p>
-                      <input
-                        id="attachments"
-                        type="file"
-                        accept=".pdf,.doc,.docx"
-                        multiple
-                        className="hidden"
-                        onChange={handleAttachmentUpload}
-                      />
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <label htmlFor="organizer" className="block text-sm font-medium text-gray-700 mb-2">
-                      Organizer (Optional)
-                    </label>
-                    <input
-                      id="organizer"
-                      type="text"
-                      placeholder="Event organizer name"
-                      value={newEvent.organizer}
-                      onChange={(e) => setNewEvent({ ...newEvent, organizer: e.target.value })}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                    />
-                  </div>
-                  
-                  <div className="flex space-x-4 pt-4">
-                    <button
-                      type="submit"
-                      className="flex-1 bg-blue-600 text-white px-6 py-3 rounded-xl font-medium hover:bg-blue-700 transition-colors duration-200 shadow-sm"
-                    >
-                      Create Event
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setShowCreateForm(false)}
-                      className="flex-1 bg-gray-100 text-gray-700 px-6 py-3 rounded-xl font-medium hover:bg-gray-200 transition-colors duration-200"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </form>
+                      
+                      <div>
+                        <label htmlFor="organizer" className="block text-sm font-medium text-gray-700 mb-2">
+                          Organizer (Optional)
+                        </label>
+                        <input
+                          id="organizer"
+                          type="text"
+                          placeholder="Event organizer name"
+                          value={newEvent.organizer}
+                          onChange={(e) => setNewEvent({ ...newEvent, organizer: e.target.value })}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                        />
+                      </div>
+                      
+                      <div className="flex space-x-4 pt-4">
+                        <button
+                          type="submit"
+                          className="flex-1 bg-blue-600 text-white px-6 py-3 rounded-xl font-medium hover:bg-blue-700 transition-colors duration-200 shadow-sm"
+                        >
+                          Create Event
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setShowCreateForm(false)}
+                          className="flex-1 bg-gray-100 text-gray-700 px-6 py-3 rounded-xl font-medium hover:bg-gray-200 transition-colors duration-200"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </form>
+                  </>
+                )}
               </div>
             </div>
           </div>
@@ -1262,7 +1314,34 @@ function EventsPage() {
       <section className="py-12">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
-            <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">Your Events</h2>
+            <div className="flex justify-between items-center mb-8">
+              <h2 className="text-3xl font-bold text-gray-900">Events</h2>
+              <div className="flex gap-3">
+                {isAuthenticated ? (
+                  <>
+                    <button
+                      onClick={() => setShowCreateForm(true)}
+                      className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-xl text-white bg-[#C62828] hover:bg-[#B71C1C] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#C62828]"
+                    >
+                      Create Event
+                    </button>
+                    <button
+                      onClick={handleSignOut}
+                      className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-xl text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#C62828]"
+                    >
+                      Sign Out
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    onClick={() => setShowAuth(true)}
+                    className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-xl text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#C62828]"
+                  >
+                    Admin Sign In
+                  </button>
+                )}
+              </div>
+            </div>
             
             {loading ? (
               <div className="text-center py-12">
@@ -1281,15 +1360,22 @@ function EventsPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
                   <h3 className="mt-2 text-sm font-medium text-gray-900">No events</h3>
-                  <p className="mt-1 text-sm text-gray-500">Get started by creating your first event.</p>
-                  <div className="mt-6">
-                    <button
-                      onClick={() => setShowCreateForm(true)}
-                      className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-xl text-white bg-[#C62828] hover:bg-[#B71C1C] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#C62828]"
-                    >
-                      Create Event
-                    </button>
-                  </div>
+                  <p className="mt-1 text-sm text-gray-500">
+                    {isAuthenticated 
+                      ? "Get started by creating your first event." 
+                      : "No events have been posted yet. Check back soon!"
+                    }
+                  </p>
+                  {isAuthenticated && (
+                    <div className="mt-6">
+                      <button
+                        onClick={() => setShowCreateForm(true)}
+                        className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-xl text-white bg-[#C62828] hover:bg-[#B71C1C] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#C62828]"
+                      >
+                        Create Event
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             ) : (
@@ -1595,18 +1681,22 @@ function EventsPage() {
                             >
                               Add to Calendar
                             </button>
-                            <button
-                              onClick={() => startEditingEvent(event)}
-                              className="rounded-full px-6 py-2 font-semibold text-[#C62828] bg-white border border-[#C62828] shadow-sm hover:bg-[#FDEAEA] hover:text-[#B71C1C] transition-all duration-150 text-base focus:outline-none focus:ring-2 focus:ring-[#C62828] focus:ring-offset-2"
-                            >
-                              Edit
-                            </button>
-                            <button
-                              onClick={() => handleDeleteEvent(event.id)}
-                              className="rounded-full px-6 py-2 font-semibold text-[#C62828] bg-white border border-[#C62828] shadow-sm hover:bg-[#FDEAEA] hover:text-[#B71C1C] transition-all duration-150 text-base focus:outline-none focus:ring-2 focus:ring-[#C62828] focus:ring-offset-2"
-                            >
-                              Delete
-                            </button>
+                            {isAuthenticated && (
+                              <>
+                                <button
+                                  onClick={() => startEditingEvent(event)}
+                                  className="rounded-full px-6 py-2 font-semibold text-[#C62828] bg-white border border-[#C62828] shadow-sm hover:bg-[#FDEAEA] hover:text-[#B71C1C] transition-all duration-150 text-base focus:outline-none focus:ring-2 focus:ring-[#C62828] focus:ring-offset-2"
+                                >
+                                  Edit
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteEvent(event.id)}
+                                  className="rounded-full px-6 py-2 font-semibold text-[#C62828] bg-white border border-[#C62828] shadow-sm hover:bg-[#FDEAEA] hover:text-[#B71C1C] transition-all duration-150 text-base focus:outline-none focus:ring-2 focus:ring-[#C62828] focus:ring-offset-2"
+                                >
+                                  Delete
+                                </button>
+                              </>
+                            )}
                           </div>
                         </div>
                         

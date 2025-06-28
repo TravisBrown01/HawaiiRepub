@@ -2,11 +2,8 @@
 // this is an auto generated file. This will be overwritten
 
 export const onCreateEvent = /* GraphQL */ `
-  subscription OnCreateEvent(
-    $filter: ModelSubscriptionEventFilterInput
-    $owner: String
-  ) {
-    onCreateEvent(filter: $filter, owner: $owner) {
+  subscription OnCreateEvent($filter: ModelSubscriptionEventFilterInput) {
+    onCreateEvent(filter: $filter) {
       id
       title
       date
@@ -28,11 +25,8 @@ export const onCreateEvent = /* GraphQL */ `
   }
 `;
 export const onUpdateEvent = /* GraphQL */ `
-  subscription OnUpdateEvent(
-    $filter: ModelSubscriptionEventFilterInput
-    $owner: String
-  ) {
-    onUpdateEvent(filter: $filter, owner: $owner) {
+  subscription OnUpdateEvent($filter: ModelSubscriptionEventFilterInput) {
+    onUpdateEvent(filter: $filter) {
       id
       title
       date
@@ -54,11 +48,8 @@ export const onUpdateEvent = /* GraphQL */ `
   }
 `;
 export const onDeleteEvent = /* GraphQL */ `
-  subscription OnDeleteEvent(
-    $filter: ModelSubscriptionEventFilterInput
-    $owner: String
-  ) {
-    onDeleteEvent(filter: $filter, owner: $owner) {
+  subscription OnDeleteEvent($filter: ModelSubscriptionEventFilterInput) {
+    onDeleteEvent(filter: $filter) {
       id
       title
       date

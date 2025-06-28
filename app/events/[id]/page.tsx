@@ -79,7 +79,8 @@ function EventDetailPage() {
       
       const result = await client.graphql({
         query: getEvent,
-        variables: { id: eventId }
+        variables: { id: eventId },
+        authMode: 'apiKey'
       });
       
       console.log('GraphQL result:', result);
