@@ -100,11 +100,13 @@ export default function Header() {
             <Link href="/counties" onClick={() => { setIsMenuOpen(false); setIsResourcesDropdownOpen(false); }}>
               Counties
             </Link>
+            <Link href="/events" onClick={() => { setIsMenuOpen(false); setIsResourcesDropdownOpen(false); }}>
+              Events
+            </Link>
           </div>
         </div>
         
         <Link href="/about" onClick={() => setIsMenuOpen(false)}>About</Link>
-        <Link href="/events" onClick={() => setIsMenuOpen(false)}>Events</Link>
         <Link href="https://secure.winred.com/hawaiigop/storefront/" target="_blank" rel="noopener noreferrer" onClick={() => setIsMenuOpen(false)}>Store</Link>
         <Link href="/donate" onClick={() => setIsMenuOpen(false)}>Donate</Link>
       </nav>
