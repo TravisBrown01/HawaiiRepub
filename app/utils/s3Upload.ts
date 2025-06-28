@@ -50,8 +50,8 @@ export async function uploadFileToS3(file: File, folder: string = 'events') {
 
 // Function to get public URLs (no expiration, no authentication required)
 export function getPublicUrl(filename: string): string {
-  const bucketName = 'hawaiirepub3c8cea135e3144caa0c954df127fb2a278bcd-dev';
-  const region = 'us-west-2';
+  const bucketName = 'hrp2b6ffb3229894d9ab85e015e2b161bd00d436-main';
+  const region = 'us-east-1';
   
   // Ensure the filename is properly encoded
   const encodedFilename = encodeURIComponent(filename).replace(/%2F/g, '/');
@@ -63,8 +63,8 @@ export function getPublicUrl(filename: string): string {
 export function isValidS3Url(url: string): boolean {
   try {
     const urlObj = new URL(url);
-    const bucketName = 'hawaiirepub3c8cea135e3144caa0c954df127fb2a278bcd-dev';
-    const region = 'us-west-2';
+    const bucketName = 'hrp2b6ffb3229894d9ab85e015e2b161bd00d436-main';
+    const region = 'us-east-1';
     
     // Check if it's our S3 bucket
     if (urlObj.hostname === `${bucketName}.s3.${region}.amazonaws.com`) {
