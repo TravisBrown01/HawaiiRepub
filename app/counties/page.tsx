@@ -4,6 +4,7 @@ import Footer from '../components/Footer';
 import Image from 'next/image';
 import Link from 'next/link';
 import DonationSection from '../components/DonationSection';
+import { JoinUsCardFullWidth } from '../components/JoinUsCard';
 
 export default function CountiesPage() {
   return (
@@ -126,6 +127,9 @@ export default function CountiesPage() {
             </div>
           </div>
         </section>
+
+        {/* Move JoinUsCardFullWidth here, just above County Councils */}
+        <JoinUsCardFullWidth />
 
         {/* County Councils */}
         <section className="page-content">

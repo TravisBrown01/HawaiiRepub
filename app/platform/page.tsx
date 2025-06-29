@@ -3,6 +3,7 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import Image from 'next/image';
 import DonationSection from '../components/DonationSection';
+import { JoinUsCardFullWidth } from '../components/JoinUsCard';
 
 export default function ResourcesPage() {
   return (
@@ -265,8 +266,9 @@ export default function ResourcesPage() {
           </div>
         </section>
 
-        <Footer />
+        <JoinUsCardFullWidth />
       </main>
+      <Footer />
     </div>
   );
 } 

@@ -83,15 +83,15 @@ export default function Events() {
           <div className="text-center py-8 text-red-500">{error}</div>
         ) : (
           events.map((event) => (
-            <div className="event-card" key={event.id}>
-              <div className="event-date">
+            <div className="event-card flex" key={event.id}>
+              <div className="event-date w-40 flex-shrink-0">
                 {event.endDate && event.endDate !== event.date ? (
                   <>{formatDateRange(event.date, event.endDate)}</>
                 ) : (
                   <>{formatDate(event.date)}</>
                 )}
               </div>
-              <div className="event-info">
+              <div className="event-info flex-1">
                 <h3>{event.title}</h3>
                 <p>{event.aboutEvent}</p>
                 <Link href={`/events/${event.id}`} className="event-link">Learn More</Link>
@@ -104,14 +104,26 @@ export default function Events() {
   );
 }
 
+// Parse YYYY-MM-DD as local date (no timezone conversion)
+function parseLocalDate(dateString: string): Date {
+  const match = dateString.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+  if (!match) {
+    throw new Error(`Invalid date format: ${dateString}`);
+  }
+  const year = parseInt(match[1]);
+  const month = parseInt(match[2]) - 1; // Month is 0-indexed
+  const day = parseInt(match[3]);
+  return new Date(year, month, day);
+}
+
 function formatDate(dateString: string) {
-  const date = new Date(dateString);
+  const date = parseLocalDate(dateString);
   return date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
 }
 
 function formatDateRange(start: string, end: string) {
-  const startDate = new Date(start);
-  const endDate = new Date(end);
+  const startDate = parseLocalDate(start);
+  const endDate = parseLocalDate(end);
   if (startDate.getMonth() === endDate.getMonth() && startDate.getFullYear() === endDate.getFullYear()) {
     // Same month/year
     return `${startDate.toLocaleDateString('en-US', { month: 'long' })} ${startDate.getDate()} - ${endDate.getDate()} ${endDate.getFullYear()}`;

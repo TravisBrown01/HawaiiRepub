@@ -293,7 +293,7 @@ export default function ElectionEducation() {
                   <div className="resource-cta">Register Now →</div>
                 </a>
                 <a 
-                  href="https://elections.hawaii.gov/voter-service-centers/" 
+                  href="https://elections.hawaii.gov/voter-service-centers-and-places-of-deposit/" 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="resource-card"

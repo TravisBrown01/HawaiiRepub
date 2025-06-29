@@ -8,6 +8,7 @@ import { withAuthenticator } from '@aws-amplify/ui-react';
 import '@aws-amplify/ui-react/styles.css';
 import Link from 'next/link';
 import Header from '../components/Header';
+import Footer from '../components/Footer';
 import { useAuth } from '../contexts/AuthContext';
 import { useAmplifyClient } from '../hooks/useAmplifyClient';
 
@@ -401,9 +402,9 @@ function EventsPage() {
     try {
       setError(null);
       
-      // Validate and format dates
-      const formattedDate = validateAndFormatDate(newEvent.date);
-      const formattedEndDate = newEvent.endDate ? validateAndFormatDate(newEvent.endDate) : null;
+      // Convert MM/DD/YYYY format to YYYY-MM-DD for storage
+      const formattedDate = mmDdYyyyToYyyyMmDd(newEvent.date);
+      const formattedEndDate = newEvent.endDate ? mmDdYyyyToYyyyMmDd(newEvent.endDate) : null;
       
       // Format the event data
       const formattedEvent = {
@@ -455,7 +456,13 @@ function EventsPage() {
       showAuthModal();
       return;
     }
-    setEditingEvent(event);
+    // Convert YYYY-MM-DD format to MM/DD/YYYY for the edit form
+    const eventForEditing = {
+      ...event,
+      date: yyyyMmDdToMmDdYyyy(event.date),
+      endDate: event.endDate ? yyyyMmDdToMmDdYyyy(event.endDate) : ''
+    };
+    setEditingEvent(eventForEditing);
   };
 
   const handleUpdateEvent = async (e: React.FormEvent) => {
@@ -465,9 +472,9 @@ function EventsPage() {
     try {
       setError(null);
       
-      // Validate and format dates
-      const formattedDate = validateAndFormatDate(editingEvent.date);
-      const formattedEndDate = editingEvent.endDate ? validateAndFormatDate(editingEvent.endDate) : null;
+      // Convert MM/DD/YYYY format back to YYYY-MM-DD for storage
+      const formattedDate = mmDdYyyyToYyyyMmDd(editingEvent.date);
+      const formattedEndDate = editingEvent.endDate ? mmDdYyyyToYyyyMmDd(editingEvent.endDate) : null;
       
       // Format the event data
       const formattedEvent = {
@@ -534,8 +541,18 @@ function EventsPage() {
       throw new Error('Date is required');
     }
     
-    // Try to parse the date using JavaScript's Date constructor
-    const date = new Date(dateString);
+    // Parse MM/DD/YYYY format as local date to avoid timezone issues
+    const dateMatch = dateString.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    if (!dateMatch) {
+      throw new Error(`Please enter a valid date in MM/DD/YYYY format. Received: "${dateString}"`);
+    }
+    
+    const month = parseInt(dateMatch[1]) - 1; // Month is 0-indexed
+    const day = parseInt(dateMatch[2]);
+    const year = parseInt(dateMatch[3]);
+    
+    // Create date using local values to avoid timezone issues
+    const date = new Date(year, month, day);
     console.log('Parsed Date object:', date);
     console.log('Date.getTime():', date.getTime());
     console.log('isNaN(date.getTime()):', isNaN(date.getTime()));
@@ -545,15 +562,45 @@ function EventsPage() {
       throw new Error(`Please enter a valid date. Received: "${dateString}"`);
     }
     
-    // Format as YYYY-MM-DD for AWS
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    
-    const result = `${year}-${month}-${day}`;
+    // Format as YYYY-MM-DD for AWS (using local date components)
+    const result = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
     console.log('Final formatted result:', result);
     console.log('=== END DATE VALIDATION ===');
     return result;
+  };
+
+  // Convert YYYY-MM-DD to MM/DD/YYYY for display in forms
+  const yyyyMmDdToMmDdYyyy = (dateString: string): string => {
+    if (!dateString) return '';
+    const match = dateString.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+    if (!match) return dateString;
+    const year = match[1];
+    const month = match[2];
+    const day = match[3];
+    return `${month}/${day}/${year}`;
+  };
+
+  // Convert MM/DD/YYYY to YYYY-MM-DD for storage
+  const mmDdYyyyToYyyyMmDd = (dateString: string): string => {
+    if (!dateString) return '';
+    const match = dateString.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    if (!match) return dateString;
+    const month = match[1];
+    const day = match[2];
+    const year = match[3];
+    return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+  };
+
+  // Parse YYYY-MM-DD as local date (no timezone conversion)
+  const parseLocalDate = (dateString: string): Date => {
+    const match = dateString.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+    if (!match) {
+      throw new Error(`Invalid date format: ${dateString}`);
+    }
+    const year = parseInt(match[1]);
+    const month = parseInt(match[2]) - 1; // Month is 0-indexed
+    const day = parseInt(match[3]);
+    return new Date(year, month, day);
   };
 
   // Enhanced date/time formatting and validation
@@ -624,7 +671,7 @@ function EventsPage() {
   // iCal generation function
   const generateICal = (event: Event): string => {
     const formatDateForICal = (date: string, time?: string): string => {
-      const dateObj = new Date(date);
+      const dateObj = parseLocalDate(date);
       if (time) {
         // Parse time and add to date
         const timeMatch = time.match(/^(\d{1,2}):(\d{2})\s*(AM|PM|am|pm)?$/);
@@ -681,7 +728,7 @@ function EventsPage() {
   };
 
   const formatDate = (dateString: string): string => {
-    const date = new Date(dateString);
+    const date = parseLocalDate(dateString);
     const month = date.toLocaleDateString('en-US', { month: 'long' });
     const day = date.getDate();
     const year = date.getFullYear();
@@ -689,7 +736,7 @@ function EventsPage() {
   };
 
   const formatDateShort = (dateString: string): string => {
-    const date = new Date(dateString);
+    const date = parseLocalDate(dateString);
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   };
 
@@ -705,12 +752,12 @@ function EventsPage() {
         }
         
         // Check if event is in the future
-        const eventDate = new Date(event.date);
+        const eventDate = parseLocalDate(event.date);
         eventDate.setHours(0, 0, 0, 0);
         
         // If event has an end date, check if it ends in the future
         if (event.endDate) {
-          const endDate = new Date(event.endDate);
+          const endDate = parseLocalDate(event.endDate);
           endDate.setHours(0, 0, 0, 0);
           return endDate >= today;
         }
@@ -719,8 +766,8 @@ function EventsPage() {
         return eventDate >= today;
       })
       .sort((a, b) => {
-        const dateA = new Date(a.date);
-        const dateB = new Date(b.date);
+        const dateA = parseLocalDate(a.date);
+        const dateB = parseLocalDate(b.date);
         return dateA.getTime() - dateB.getTime(); // Soonest first
       });
   };
@@ -740,6 +787,29 @@ function EventsPage() {
     console.log('🔍 === DEBUGGING SESSION ===');
     await debugSession();
     console.log('🔍 === END DEBUGGING ===');
+  };
+
+  // Validate date in MM/DD/YYYY format (for form inputs)
+  const validateDateInput = (dateString: string): boolean => {
+    if (!dateString.trim()) return true; // Empty is valid for optional fields
+    
+    const dateMatch = dateString.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    if (!dateMatch) return false;
+    
+    const month = parseInt(dateMatch[1]);
+    const day = parseInt(dateMatch[2]);
+    const year = parseInt(dateMatch[3]);
+    
+    // Basic validation
+    if (month < 1 || month > 12) return false;
+    if (day < 1 || day > 31) return false;
+    if (year < 1900 || year > 2100) return false;
+    
+    // Create date to check if it's valid
+    const date = new Date(year, month - 1, day);
+    return date.getFullYear() === year && 
+           date.getMonth() === month - 1 && 
+           date.getDate() === day;
   };
 
   // Show loading only briefly while checking auth, then show events
@@ -1186,7 +1256,7 @@ function EventsPage() {
                             setNewEvent({ ...newEvent, date: formatted });
                           }}
                           onBlur={(e) => {
-                            if (e.target.value && !validateAndFormatDate(e.target.value)) {
+                            if (e.target.value && !validateDateInput(e.target.value)) {
                               setError('Please enter a valid date in MM/DD/YYYY format');
                             }
                           }}
@@ -1209,7 +1279,7 @@ function EventsPage() {
                             setNewEvent({ ...newEvent, endDate: formatted });
                           }}
                           onBlur={(e) => {
-                            if (e.target.value && !validateAndFormatDate(e.target.value)) {
+                            if (e.target.value && !validateDateInput(e.target.value)) {
                               setError('Please enter a valid date in MM/DD/YYYY format');
                             }
                           }}
@@ -1443,9 +1513,13 @@ function EventsPage() {
                       type="text"
                       placeholder="MM/DD/YYYY (e.g., 12/25/2024)"
                       value={editingEvent.date}
-                      onChange={(e) => setEditingEvent({ ...editingEvent, date: e.target.value })}
+                      onChange={(e) => {
+                        const formatted = formatDateInput(e.target.value);
+                        // Store the MM/DD/YYYY format temporarily
+                        setEditingEvent({ ...editingEvent, date: formatted });
+                      }}
                       onBlur={(e) => {
-                        if (e.target.value && !validateAndFormatDate(e.target.value)) {
+                        if (e.target.value && !validateDateInput(e.target.value)) {
                           setError('Please enter a valid date in MM/DD/YYYY format');
                         }
                       }}
@@ -1465,10 +1539,11 @@ function EventsPage() {
                       value={editingEvent.endDate || ''}
                       onChange={(e) => {
                         const formatted = formatDateInput(e.target.value);
+                        // Store the MM/DD/YYYY format temporarily
                         setEditingEvent({ ...editingEvent, endDate: formatted });
                       }}
                       onBlur={(e) => {
-                        if (e.target.value && !validateAndFormatDate(e.target.value)) {
+                        if (e.target.value && !validateDateInput(e.target.value)) {
                           setError('Please enter a valid date in MM/DD/YYYY format');
                         }
                       }}
@@ -1745,8 +1820,8 @@ function EventsPage() {
                         <>
                           <div>
                             {(() => {
-                              const startDate = new Date(event.date);
-                              const endDate = new Date(event.endDate);
+                              const startDate = parseLocalDate(event.date);
+                              const endDate = parseLocalDate(event.endDate);
                               const startMonth = startDate.getMonth();
                               const endMonth = endDate.getMonth();
                               const startYear = startDate.getFullYear();
@@ -1867,6 +1942,7 @@ function EventsPage() {
           </div>
         </div>
       </section>
+      <Footer />
     </div>
   );
 }

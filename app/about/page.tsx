@@ -4,6 +4,7 @@ import Footer from '../components/Footer';
 import Image from 'next/image';
 import { useState } from 'react';
 import DonationSection from '../components/DonationSection';
+import { JoinUsCardFullWidth } from '../components/JoinUsCard';
 
 export default function About() {
   const [showFreedomMore, setShowFreedomMore] = useState(false);
@@ -269,6 +270,9 @@ export default function About() {
             </div>
           </div>
         </section>
+
+        {/* Add JoinUsCardFullWidth at the very bottom */}
+        <JoinUsCardFullWidth />
       </main>
       <Footer />
     </div>

@@ -16,7 +16,7 @@ export default function Hero() {
       </div>
       <h1>Hawaii Republican Party</h1>
       <p className="hero-subtitle">Help Keep Hawaii Golden! Join the movement for a brighter future.</p>
-      <a href="#join" className="cta">Join the Team</a>
+      <a href="https://thehawaiirepublicanparty.us7.list-manage.com/subscribe?u=845fb1aa8ab3a817a0be98519&id=d918fb2428" target="_blank" rel="noopener noreferrer" className="cta">Join the Team</a>
     </section>
   );
 } 

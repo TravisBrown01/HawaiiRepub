@@ -2,6 +2,7 @@
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import Image from 'next/image';
+import { JoinUsCardFullWidth } from '../components/JoinUsCard';
 
 export default function DonatePage() {
   return (
@@ -247,8 +248,9 @@ export default function DonatePage() {
           </div>
         </section>
 
-        <Footer />
+        <JoinUsCardFullWidth />
       </main>
+      <Footer />
     </div>
   );
 } 

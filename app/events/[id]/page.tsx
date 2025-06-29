@@ -30,6 +30,18 @@ export default function EventDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const client = useAmplifyClient();
 
+  // Parse YYYY-MM-DD as local date (no timezone conversion)
+  const parseLocalDate = (dateString: string): Date => {
+    const match = dateString.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+    if (!match) {
+      throw new Error(`Invalid date format: ${dateString}`);
+    }
+    const year = parseInt(match[1]);
+    const month = parseInt(match[2]) - 1; // Month is 0-indexed
+    const day = parseInt(match[3]);
+    return new Date(year, month, day);
+  };
+
   const calculateDuration = (startTime: string, endTime: string): string => {
     const start = new Date(`2000-01-01T${startTime}`);
     const end = new Date(`2000-01-01T${endTime}`);
@@ -76,7 +88,7 @@ export default function EventDetailPage() {
 
   const downloadICal = (event: Event) => {
     const formatDateForICal = (date: string, time?: string): string => {
-      const dateObj = new Date(date);
+      const dateObj = parseLocalDate(date);
       if (time) {
         const [hours, minutes] = time.split(':');
         dateObj.setHours(parseInt(hours), parseInt(minutes), 0, 0);
@@ -155,7 +167,7 @@ export default function EventDetailPage() {
     );
   }
 
-  const formattedDate = new Date(event.date).toLocaleDateString('en-US', { 
+  const formattedDate = parseLocalDate(event.date).toLocaleDateString('en-US', { 
     weekday: 'long',
     year: 'numeric', 
     month: 'long', 
@@ -229,7 +241,7 @@ export default function EventDetailPage() {
               <span className="text-red-100">{formattedDate}</span>
               {event.endDate && event.endDate !== event.date && (
                 <span className="text-red-100">
-                  - {new Date(event.endDate).toLocaleDateString('en-US', { 
+                  - {parseLocalDate(event.endDate).toLocaleDateString('en-US', { 
                     month: 'long', 
                     day: 'numeric',
                     year: 'numeric' 

@@ -6,6 +6,7 @@ import Events from './components/Events';
 import ValuesPreview from './components/ValuesPreview';
 import Footer from './components/Footer';
 import DonationSection from './components/DonationSection';
+import { JoinUsCardFullWidth } from './components/JoinUsCard';
 
 export default function Home() {
   return (
@@ -17,6 +18,7 @@ export default function Home() {
       <Actions />
       <Events />
       <ValuesPreview />
+      <JoinUsCardFullWidth />
       <Footer />
     </div>
   );
